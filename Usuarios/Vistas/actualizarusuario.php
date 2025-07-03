@@ -30,8 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form action="" method="POST" class="space-y-4">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($usuario['id']); ?>">
             <div>
-                <label class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required
+                <label class="block text-sm font-medium text-gray-700">Nombres</label>
+                <input type="text" name="nombres" value="<?php echo htmlspecialchars($usuario['nombres']); ?>" required
+                    class="w-full mt-1 p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Apellidos</label>
+                <input type="text" name="apellidos" value="<?php echo htmlspecialchars($usuario['apellidos']); ?>" required
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md">
             </div>
             <div>

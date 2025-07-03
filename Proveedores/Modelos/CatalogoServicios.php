@@ -1,7 +1,5 @@
 <?php
-// Ubicación: Proveedores/Modelos/CatalogoServicios.php
-
-require_once __DIR__ . '/../../conexion_db.php';
+require_once '../../conexion_db.php';
 
 class CatalogoServicios {
 
@@ -51,9 +49,6 @@ class CatalogoServicios {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Busca un servicio por su ID y carga los datos en el objeto actual.
-     */
     public function buscar($id) {
         $sql = "SELECT * FROM catalogo_servicios WHERE id_servicio = :id";
         $stmt = $this->conexion->prepare($sql);

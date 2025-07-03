@@ -8,8 +8,14 @@ require_once '../../layouts/header.php';
 
         <form action="registrarUsuario.php" method="POST" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" name="nombre" placeholder="Nombre" required
+                <label class="block text-sm font-medium text-gray-700">Nombres</label>
+                <input type="text" name="nombres" placeholder="Nombres" required
+                    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Apellidos</label>
+                <input type="text" name="apellidos" placeholder="Apellidos" required
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
