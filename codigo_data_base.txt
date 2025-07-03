@@ -1,0 +1,129 @@
+create database lp2_eventos;
+use lp2_eventos;
+
+-- 1. Tabla de roles
+CREATE TABLE roles (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- 2. Tabla de usuarios
+CREATE TABLE usuarios (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(100) NOT NULL,
+correo VARCHAR(100) UNIQUE NOT NULL,
+password VARCHAR(255) NOT NULL,
+id_rol INT,
+FOREIGN KEY (id_rol) REFERENCES roles(id)
+);
+
+-- 3. Tabla de eventos
+CREATE TABLE eventos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+titulo VARCHAR(100) NOT NULL,
+descripcion TEXT,
+fecha_evento DATE NOT NULL,
+hora_inicio TIME,
+hora_fin TIME,
+estado ENUM('pendiente', 'confirmado', 'cancelado') DEFAULT 'pendiente',
+id_usuario INT,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 4. Tabla de recursos
+CREATE TABLE recursos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+tipo VARCHAR(50) NOT NULL,
+descripcion TEXT,
+disponible BOOLEAN DEFAULT TRUE
+);
+
+-- 5. Tabla de reservas
+CREATE TABLE reservas (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_evento INT,
+fecha DATE NOT NULL,
+hora_inicio TIME,
+hora_fin TIME,
+id_recurso INT,
+estado ENUM('reservado', 'cancelado') DEFAULT 'reservado',
+FOREIGN KEY (id_evento) REFERENCES eventos(id),
+FOREIGN KEY (id_recurso) REFERENCES recursos(id)
+);
+
+-- 6. Tabla de proveedores
+CREATE TABLE proveedores (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(100) NOT NULL,
+correo VARCHAR(100) UNIQUE NOT NULL,
+empresa VARCHAR(100),
+id_usuario INT,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 7. Tabla de servicios_proveedor
+CREATE TABLE servicios_proveedor (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_proveedor INT,
+nombre_servicio VARCHAR(100),
+precio DECIMAL(10,2),
+FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+);
+
+-- 8. Tabla de contratos
+CREATE TABLE contratos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_proveedor INT,
+fecha_inicio DATE NOT NULL,
+fecha_fin DATE,
+archivo_pdf VARCHAR(255),
+estado ENUM('activo', 'finalizado') DEFAULT 'activo',
+FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+);
+
+-- 9. Tabla de calificaciones
+CREATE TABLE calificaciones (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_evento INT,
+id_usuario INT,
+puntuacion INT CHECK (puntuacion BETWEEN 1 AND 5),
+comentario TEXT,
+FOREIGN KEY (id_evento) REFERENCES eventos(id),
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 10. Tabla de quejas
+CREATE TABLE quejas (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_usuario INT,
+descripcion TEXT,
+fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 11. Tabla de notificaciones
+CREATE TABLE notificaciones (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_usuario INT,
+mensaje TEXT NOT NULL,
+leido BOOLEAN DEFAULT FALSE,
+fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 12. Tabla de reportes
+CREATE TABLE reportes (
+id INT AUTO_INCREMENT PRIMARY KEY,
+tipo VARCHAR(50),
+id_usuario INT,
+fecha_generado DATETIME DEFAULT CURRENT_TIMESTAMP,
+archivo_pdf VARCHAR(255),
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 13. Inserción de roles base
+INSERT INTO roles (nombre) VALUES
+('Cliente'),
+('Proveedor'),
+('Organizador'),
+('Administrador');

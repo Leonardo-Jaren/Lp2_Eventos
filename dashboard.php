@@ -1,50 +1,51 @@
 <?php
 session_start();
-require_once 'layouts/header.php';
-require_once 'conexion_db.php';
 
-// Verificar si el usuario está logueado
 if (!isset($_SESSION['id'])) {
     header("Location: Autenticación/Vista/login.php");
     exit();
 }
 
-// Obtener información del usuario
+require_once 'conexion_db.php';
+
 $conexion = new ConexionDB();
 $conn = $conexion->conectar();
 $sqlUser = "SELECT u.nombre, u.correo, r.nombre as rol FROM usuarios u 
-            JOIN roles r ON u.id_rol = r.id 
+            LEFT JOIN roles r ON u.id_rol = r.id 
             WHERE u.id = ?";
 $stmt = $conn->prepare($sqlUser);
 $stmt->execute([$_SESSION['id']]);
 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$titulo_pagina = "Dashboard - Panel de Control";
+require_once 'layouts/header.php';
 ?>
 
 <div class="min-h-screen bg-gray-50">
-    <!-- Header del Dashboard -->
-    <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
+    <!-- Banner de Dashboard -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <p class="text-gray-600">Panel de control del sistema</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
+                    <p class="text-gray-600">Panel de control del sistema de eventos</p>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Conectado como:</p>
-                        <p class="font-medium text-gray-900"><?php echo htmlspecialchars($usuario['nombre']); ?></p>
-                        <p class="text-xs text-blue-600"><?php echo htmlspecialchars($usuario['rol']); ?></p>
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="bg-blue-50 rounded-lg px-4 py-2">
+                        <p class="text-sm text-blue-600 font-medium">
+                            <i class="fas fa-calendar-check mr-1"></i>
+                            Sistema activo
+                        </p>
                     </div>
-                    <a href="Autenticación/Vista/logout.php"
-                        class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200">
-                        Cerrar Sesión
-                    </a>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Fecha actual:</p>
+                        <p class="font-medium text-gray-900"><?php echo date('d/m/Y'); ?></p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Contenido Principal -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Mensaje de Bienvenida -->
         <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 mb-8">
