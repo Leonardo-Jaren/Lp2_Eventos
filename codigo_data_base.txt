@@ -122,8 +122,8 @@ archivo_pdf VARCHAR(255),
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 13. Inserción de roles base
-INSERT INTO roles (nombre) VALUES
+
+INSERT INTO roles(nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),

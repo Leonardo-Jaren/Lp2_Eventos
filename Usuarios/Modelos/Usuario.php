@@ -54,5 +54,14 @@ class Usuario {
         $conn->desconectar();
         return $resultado;
     }
+
+    public static function obtenerTodos() {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sql = "SELECT id_usuario, nombre, correo FROM usuarios ORDER BY nombre";
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>
