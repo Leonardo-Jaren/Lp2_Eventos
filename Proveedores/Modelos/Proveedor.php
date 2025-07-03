@@ -1,51 +1,104 @@
 <?php
+// models/Proveedor.php
 
-require_once 'conexion.php';
+// Esta ruta es correcta para tu estructura de carpetas. ¡Bien hecho!
+require_once __DIR__ . '/../../conexion_db.php';
 
-class Proveedor{
+class Proveedor {
 
-    private $nombre;
-    private $correo;
-    private $empresa;
+    // --- ATRIBUTOS ---
+    private $id_proveedor;
+    private $id_usuario;
+    private $nombre_empresa;
+    private $descripcion;
+    private $direccion;
 
-    public function mostrar(){
-        $conn = new ConexionDB();
-        $conexion = $conn->conectar();
-        $sql = "SELECT * FROM proveedores";
-        $resultado = $conexion->query($sql);
-        $conn->desconectar();
-        return $resultado;
+    /**
+     * @var PDO Guarda la conexión para ser reutilizada por el objeto.
+     */
+    private $conexion;
+
+    /**
+     * El constructor se ejecuta al crear un nuevo objeto Proveedor.
+     * Crea la conexión a la BD una sola vez por objeto.
+     */
+    public function __construct() {
+        $db = new ConexionDB();
+        $this->conexion = $db->conectar();
     }
 
-    public function guardar($nombre,$correo,$empresa){
-        $ccnn = new ConexionDB();
-        $conexion = $ccnn->conectar();
-        $sql = "INSERT INTO proveedores(nombre,correo,empresa) 
-        VALUES('$nombre','$correo','$empresa')";
-        $resultado = $conexion->exec($sql);
-        $ccnn->desconectar();
-        return $resultado;
+    // --- GETTERS Y SETTERS ---
+    // (Estos están perfectos, no necesitan cambios)
+    public function getIdProveedor() { return $this->id_proveedor; }
+    public function getIdUsuario() { return $this->id_usuario; }
+    public function getNombreEmpresa() { return $this->nombre_empresa; }
+    public function getDescripcion() { return $this->descripcion; }
+    public function getDireccion() { return $this->direccion; }
+    public function setIdUsuario($id) { $this->id_usuario = $id; }
+    public function setNombreEmpresa($nombre) { $this->nombre_empresa = $nombre; }
+    public function setDescripcion($desc) { $this->descripcion = $desc; }
+    public function setDireccion($dir) { $this->direccion = $dir; }
+
+    // --- MÉTODOS DE BASE DE DATOS (CRUD) ---
+
+    public static function mostrar() {
+        $sql = "SELECT p.*, u.email FROM proveedores p JOIN usuarios u ON p.id_usuario = u.id_usuario ORDER BY p.nombre_empresa";
+        // CORRECCIÓN: Usar tu clase ConexionDB correctamente
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function actualizar($id,$nombre,$correo,$empresa){
-        $conn = new ConexionDB();
-        $conexion = $conn->conectar();
-        $sql = "UPDATE proveedores SET nombre='$nombre', correo='$correo', empresa='$empresa' WHERE id='$id'";
-        $resultado = $conexion->exec($sql);
-        $conn->desconectar();
-        return $resultado;
+    public function encontrar($id) {
+        $sql = "SELECT * FROM proveedores WHERE id_proveedor = :id";
+        // CORRECCIÓN: Usar la conexión guardada en el objeto
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            $this->id_proveedor = $data['id_proveedor'];
+            $this->id_usuario = $data['id_usuario'];
+            $this->nombre_empresa = $data['nombre_empresa'];
+            $this->descripcion = $data['descripcion'];
+            $this->direccion = $data['direccion'];
+            return true;
+        }
+        return false;
     }
 
-    public function eliminar($id){
-        $conn = new ConexionDB();
-        $conexion = $conn->conectar();
-        $sql = "DELETE FROM proveedores WHERE id=$id";
-        $resultado = $conexion->exec($sql);
-        $conn->desconectar();
-        return $resultado;
+    public function guardar() {
+        if ($this->id_proveedor) {
+            $sql = "UPDATE proveedores SET id_usuario = :id_usuario, nombre_empresa = :nombre_empresa, descripcion = :descripcion, direccion = :direccion WHERE id_proveedor = :id_proveedor";
+        } else {
+            $sql = "INSERT INTO proveedores(id_usuario, nombre_empresa, descripcion, direccion) VALUES(:id_usuario, :nombre_empresa, :descripcion, :direccion)";
+        }
+        
+        // CORRECCIÓN: Usar la conexión guardada en el objeto
+        $stmt = $this->conexion->prepare($sql);
+        
+        $stmt->bindParam(':id_usuario', $this->id_usuario);
+        $stmt->bindParam(':nombre_empresa', $this->nombre_empresa);
+        $stmt->bindParam(':descripcion', $this->descripcion);
+        $stmt->bindParam(':direccion', $this->direccion);
+        
+        if ($this->id_proveedor) {
+            $stmt->bindParam(':id_proveedor', $this->id_proveedor);
+        }
+        
+        return $stmt->execute();
+    }
+
+    public static function eliminar($id) {
+        $sql = "DELETE FROM proveedores WHERE id_proveedor = :id";
+        // CORRECCIÓN: Usar tu clase ConexionDB correctamente
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 }
-
-
-
-
