@@ -42,7 +42,7 @@ class Proveedor {
     // --- MÉTODOS DE BASE DE DATOS (CRUD) ---
 
     public static function mostrar() {
-        $sql = "SELECT p.*, u.email FROM proveedores p JOIN usuarios u ON p.id_usuario = u.id_usuario ORDER BY p.nombre_empresa";
+        $sql = "SELECT p.*, u.correo FROM proveedores p JOIN usuarios u ON p.id_usuario = u.id_usuario ORDER BY p.nombre_empresa";
         // CORRECCIÓN: Usar tu clase ConexionDB correctamente
         $db = new ConexionDB();
         $conexion = $db->conectar();
@@ -100,5 +100,34 @@ class Proveedor {
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
+    }
+
+    /**
+     * Obtiene todas las reservas asociadas a un proveedor específico.
+     *
+     * @param int $id_proveedor El ID del proveedor.
+     * @return array La lista de reservas.
+     */
+    public static function obtenerReservasPorProveedor($id_proveedor) {
+        $sql = "SELECT 
+                    r.nombre_evento,
+                    r.fecha_evento,
+                    r.lugar,
+                    u.nombre AS nombre_cliente,
+                    cs.nombre_servicio,
+                    ep.estado_participacion
+                FROM evento_proveedores ep
+                JOIN catalogo_servicios cs ON ep.id_servicio = cs.id_servicio
+                JOIN reservas r ON ep.id_reserva = r.id_reserva
+                JOIN usuarios u ON r.id_cliente = u.id_usuario
+                WHERE cs.id_proveedor = :id_proveedor
+                ORDER BY r.fecha_evento DESC";
+
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

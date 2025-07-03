@@ -136,17 +136,47 @@ class ProveedorController {
     }
     
     /**
-     * Muestra una página de confirmación de participación.
+     * Procesa la decisión de un proveedor de participar o no en un evento.
      * Acción: confirmarParticipacion
      */
     public function confirmarParticipacion() {
-        // En una aplicación real, aquí obtendrías los datos de la URL o un formulario
-        $decision = $_GET['decision'] ?? 'indefinida';
-        $mensaje = "Tu decisión ha sido registrada como: " . htmlspecialchars($decision);
+        // Incluir el nuevo modelo
+        require_once __DIR__ . '/../Modelos/EventoProveedor.php';
+
+        // Obtener los datos de la URL
+        $id_reserva = $_GET['id_reserva'] ?? null;
+        $id_servicio = $_GET['id_servicio'] ?? null;
+        $decision = $_GET['decision'] ?? null;
+
+        // Validar que los datos necesarios estén presentes
+        if (!$id_reserva || !$id_servicio || !$decision) {
+            $_SESSION['participacion_mensaje'] = 'Error: Faltan datos para procesar la solicitud.';
+            $_SESSION['participacion_estado'] = 'error';
+            header('Location: index.php?module=Proveedores&action=mostrarConfirmacion');
+            exit();
+        }
+
+        // Llamar al modelo para actualizar la base de datos
+        $exito = EventoProveedor::actualizarEstado($id_reserva, $id_servicio, $decision);
+
+        if ($exito) {
+            $_SESSION['participacion_mensaje'] = "¡Gracias! Tu decisión de '" . htmlspecialchars($decision) . "' ha sido registrada correctamente.";
+            $_SESSION['participacion_estado'] = 'exito';
+        } else {
+            $_SESSION['participacion_mensaje'] = "Error: No se pudo registrar tu decisión. Es posible que el enlace no sea válido o ya haya sido utilizado.";
+            $_SESSION['participacion_estado'] = 'error';
+        }
         
-        // Aquí iría la lógica para llamar a un modelo y actualizar la tabla 'evento_proveedores'
-        // Ejemplo: EventoProveedor::actualizarEstado($id_reserva, $id_servicio, $decision);
-        
+        // Redirigir a una vista de confirmación genérica
+        header('Location: index.php?module=Proveedores&action=mostrarConfirmacion');
+        exit();
+    }
+
+    /**
+     * Muestra la página de resultado después de que un proveedor confirma o rechaza.
+     * Acción: mostrarConfirmacion
+     */
+    public function mostrarConfirmacion() {
         require __DIR__ . '/../Vistas/confirmarParticipacion.php';
     }
 
@@ -156,15 +186,54 @@ class ProveedorController {
      */
     public function descargarPdf() {
         $id_proveedor = $_GET['id'] ?? null;
-        if (!$id_proveedor) die('Error: ID no proporcionado.');
+        if (!$id_proveedor) {
+            die('Error: ID de proveedor no proporcionado para el PDF.');
+        }
+
+        // Incluir la librería FPDF
+        require_once __DIR__ . '/../../lib/fpdf/fpdf.php';
+
+        // Obtener los datos del proveedor para el título del PDF
+        $proveedor = new Proveedor();
+        if (!$proveedor->encontrar($id_proveedor)) {
+            die('Error: Proveedor no encontrado.');
+        }
+        $nombre_empresa = $proveedor->getNombreEmpresa();
+
+        // Obtener las reservas del proveedor
+        $reservas = Proveedor::obtenerReservasPorProveedor($id_proveedor);
+
+        // Crear una nueva instancia de FPDF
+        $pdf = new FPDF();
+        $pdf->AddPage();
+        $pdf->SetFont('Arial', 'B', 16);
         
-        echo "Lógica para generar el PDF de reservas del proveedor con ID: $id_proveedor. Necesitarás una librería como FPDF o TCPDF.";
-        
-        // --- CÓDIGO DE EJEMPLO PARA FPDF ---
-        // 1. Incluir la librería: require_once __DIR__ . '/../../lib/fpdf/fpdf.php';
-        // 2. Obtener datos de la BD: $reservas = ...;
-        // 3. Crear el objeto PDF: $pdf = new FPDF();
-        // 4. Añadir página, fuentes y celdas con los datos: $pdf->AddPage(); ...
-        // 5. Forzar la descarga: $pdf->Output('D', 'reservas.pdf');
+        // Título del PDF
+        $pdf->Cell(0, 10, utf8_decode('Reservas del Proveedor: ' . $nombre_empresa), 0, 1, 'C');
+        $pdf->Ln(10);
+
+        // Cabecera de la tabla
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetFillColor(200, 220, 255);
+        $pdf->Cell(50, 7, utf8_decode('Evento'), 1, 0, 'C', true);
+        $pdf->Cell(30, 7, utf8_decode('Fecha'), 1, 0, 'C', true);
+        $pdf->Cell(40, 7, utf8_decode('Lugar'), 1, 0, 'C', true);
+        $pdf->Cell(40, 7, utf8_decode('Servicio'), 1, 0, 'C', true);
+        $pdf->Cell(30, 7, utf8_decode('Estado'), 1, 1, 'C', true);
+
+        // Datos de la tabla
+        $pdf->SetFont('Arial', '', 8);
+        foreach ($reservas as $reserva) {
+            $pdf->Cell(50, 6, utf8_decode($reserva['nombre_evento']), 1);
+            $pdf->Cell(30, 6, utf8_decode(date('d/m/Y', strtotime($reserva['fecha_evento']))), 1);
+            $pdf->Cell(40, 6, utf8_decode($reserva['lugar']), 1);
+            $pdf->Cell(40, 6, utf8_decode($reserva['nombre_servicio']), 1);
+            $pdf->Cell(30, 6, utf8_decode($reserva['estado_participacion']), 1);
+            $pdf->Ln();
+        }
+
+        // Salida del PDF (forzar descarga)
+        $pdf->Output('D', utf8_decode('reservas_' . $nombre_empresa . '.pdf'));
+        exit();
     }
 }
