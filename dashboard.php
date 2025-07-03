@@ -10,15 +10,26 @@ require_once 'conexion_db.php';
 
 $conexion = new ConexionDB();
 $conn = $conexion->conectar();
-$sqlUser = "SELECT u.nombre, u.correo, r.nombre as rol FROM usuarios u 
+
+// Verificar que el usuario existe y obtener sus datos
+$sqlUser = "SELECT u.nombres, u.correo, r.nombre as rol FROM usuarios u 
             LEFT JOIN roles r ON u.id_rol = r.id 
             WHERE u.id = ?";
 $stmt = $conn->prepare($sqlUser);
 $stmt->execute([$_SESSION['id']]);
 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Verificar si se encontró el usuario
+if (!$usuario) {
+    // Si no se encuentra el usuario, destruir la sesión y redirigir
+    session_destroy();
+    header("Location: Autenticación/Vista/login.php");
+    exit();
+}
+
 $titulo_pagina = "Dashboard - Panel de Control";
 require_once 'layouts/header.php';
+require_once 'nav.php';
 ?>
 
 <div class="min-h-screen bg-gray-50">
@@ -27,7 +38,7 @@ require_once 'layouts/header.php';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Sistema para Gestión de Eventos</h1>
                     <p class="text-gray-600">Panel de control del sistema de eventos</p>
                 </div>
                 <div class="hidden md:flex items-center space-x-4">
@@ -51,24 +62,19 @@ require_once 'layouts/header.php';
         <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 mb-8">
             <div class="text-white">
                 <h2 class="text-4xl font-bold mb-2">
-                    ¡Bienvenido, <?php echo htmlspecialchars($usuario['nombre']); ?>! 👋
+                    ¡Bienvenido, <?php echo htmlspecialchars($usuario['nombres']); ?>! 👋
                 </h2>
                 <p class="text-blue-100 text-lg">
                     Nos alegra verte de nuevo. Aquí tienes acceso a todas las funcionalidades del sistema.
                 </p>
                 <div class="mt-4 flex items-center space-x-4 text-blue-100">
                     <span class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                        </svg>
-                        <?php echo htmlspecialchars($usuario['correo']); ?>
+                        <i class="fas fa-envelope mr-2"></i>
+                        <?php echo htmlspecialchars($usuario['correo'] ?? 'No disponible'); ?>
                     </span>
                     <span class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                        </svg>
-                        <?php echo htmlspecialchars($usuario['rol']); ?>
+                        <i class="fas fa-user mr-2"></i>
+                        <?php echo htmlspecialchars($usuario['rol'] ?? 'Sin rol'); ?>
                     </span>
                 </div>
             </div>

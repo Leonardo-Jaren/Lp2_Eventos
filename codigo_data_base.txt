@@ -1,113 +1,133 @@
 create database lp2_eventos;
 use lp2_eventos;
 
-create table roles(
-id_rol int primary key auto_increment,
-nombre varchar(50) unique not null
+-- 1. Tabla de roles
+CREATE TABLE roles (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(50) UNIQUE NOT NULL
 );
 
-create table usuarios(
-id_usuario int primary key auto_increment,
-id_rol int not null,
-nombre varchar(100) not null,
-correo varchar(100) not null,
-apellido varchar(100) not null,
-password varchar(255) not null,
-telefono varchar(20) null,
-foreign key (id_rol) references roles(id_rol),
-fecha_registro timestamp default current_timestamp
+-- 2. Tabla de usuarios
+CREATE TABLE usuarios (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombres VARCHAR(100) NOT NULL,
+apellidos varchar(100) not null,
+correo VARCHAR(100) UNIQUE NOT NULL,
+password VARCHAR(255) NOT NULL,
+id_rol INT,
+FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
-create table proveedores(
-id_proveedor int auto_increment primary key,
-id_usuario int not null unique,
-nombre_empresa varchar(255) not null,
-descripcion text null,
-direccion varchar(255) not null,
-foreign key (id_usuario) references usuarios(id_usuario) on delete cascade
+-- Tabla para permisos
+
+create table permisos (
+id int auto_increment primary key,
+nombre_permiso varchar(100),
+descripcion text
 );
 
-create table catalogo_servicios(
-id_servicio int primary key auto_increment,
-id_proveedor int not null,
-nombre_servicio varchar(255) not null,
-descripcion_servicio text null,
-precio_base decimal(10,2) not null,
-categoria varchar(100) null,
-foreign key (id_proveedor) references proveedores(id_proveedor) on delete cascade
+-- Tabla rol_permiso
+create table rol_permiso (
+rol_id INT,
+permiso_id INT,
+foreign key (rol_id) references roles(id),
+FOREIGN KEY (permiso_id) REFERENCES permisos(id)
+);
+-- 3. Tabla de eventos
+CREATE TABLE eventos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+titulo VARCHAR(100) NOT NULL,
+descripcion TEXT,
+fecha_evento DATE NOT NULL,
+hora_inicio TIME,
+hora_fin TIME,
+estado ENUM('pendiente', 'confirmado', 'cancelado') DEFAULT 'pendiente',
+id_usuario INT,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
-create table recursos(
-id_recurso int primary key auto_increment,
-nombre_recurso varchar(150) not null,
-tipo_recurso enum('salon','equipo','personal','otro') not null,
-descripcion text null,
-capacidad int null,
-estado enum('disponible','mantenimiento','ocupado') not null default 'disponible'
+-- 4. Tabla de recursos
+CREATE TABLE recursos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+tipo VARCHAR(50) NOT NULL,
+descripcion TEXT,
+disponible BOOLEAN DEFAULT TRUE
 );
 
-create table reservas(
-id_reserva int primary key auto_increment,
-id_cliente int not null,
-id_organizador int not null,
-nombre_evento varchar(200) not null,
-fecha_evento datetime not null,
-lugar varchar(255) not null,
-descripcion text null,
-estado enum('pendiente','confirmada','finalizada','cancelada') not null default 'pendiente',
-fecha_creacion timestamp default current_timestamp,
-foreign key (id_cliente) references usuarios(id_usuario) on delete cascade,
-foreign key (id_organizador) references usuarios(id_usuario) on delete cascade
+-- 5. Tabla de reservas
+CREATE TABLE reservas (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_evento INT,
+fecha DATE NOT NULL,
+hora_inicio TIME,
+hora_fin TIME,
+id_recurso INT,
+estado ENUM('reservado', 'cancelado') DEFAULT 'reservado',
+FOREIGN KEY (id_evento) REFERENCES eventos(id),
+FOREIGN KEY (id_recurso) REFERENCES recursos(id)
 );
 
-
-create table reserva_recursos(
-id_reserva int not null,
-id_recurso int not null,
-primary key (id_reserva,id_recurso),
-foreign key (id_reserva) references reservas(id_reserva) on delete cascade,
-foreign key (id_recurso) references recursos(id_recurso) on delete cascade
+-- 6. Tabla de proveedores
+CREATE TABLE proveedores (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(100) NOT NULL,
+correo VARCHAR(100) UNIQUE NOT NULL,
+empresa VARCHAR(100),
+id_usuario INT,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
-
-create table evento_proveedores(
-id_reserva int not null,
-id_servicio int not null,
-estado_participacion enum('invitado','confirmado','rechazado') not null default 'invitado',
-precio_acordado decimal(10,2) null,
-primary key (id_reserva, id_servicio),
-foreign key (id_reserva) references reservas(id_reserva) on delete cascade,
-foreign key (id_servicio) references catalogo_servicios(id_servicio) on delete cascade
+-- 7. Tabla de servicios_proveedor
+CREATE TABLE servicios_proveedor (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_proveedor INT,
+nombre_servicio VARCHAR(100),
+precio DECIMAL(10,2),
+FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
-
-create table calificaciones(
-id_calificacion int primary key auto_increment,
-id_reserva int not null,
-id_servicio int not null,
-id_cliente int not null,
-puntuacion tinyint not null,
-comentario text null,
-fecha_calificacion timestamp default current_timestamp,
-foreign key (id_reserva) references reservas(id_reserva) on delete cascade,
-foreign key (id_servicio) references catalogo_servicios(id_servicio) on delete cascade,
-foreign key (id_cliente) references usuarios(id_usuario) on delete cascade
+-- 8. Tabla de contratos
+CREATE TABLE contratos (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_proveedor INT,
+fecha_inicio DATE NOT NULL,
+fecha_fin DATE,
+archivo_pdf VARCHAR(255),
+estado ENUM('activo', 'finalizado') DEFAULT 'activo',
+FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
-create table quejas(
-id_queja int primary key auto_increment,
-id_reserva int not null,
-id_usuario_queja int not null,
-asunto varchar(255) not null,
-descripcion text not null,
-estado enum('recibida','en_proceso','resuelta') not null default 'recibida',
-fecha_queja timestamp default current_timestamp,
-foreign key (id_reserva) references reservas(id_reserva),
-foreign key (id_usuario_queja) references usuarios(id_usuario)
+-- 10. Tabla de quejas
+CREATE TABLE quejas (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_usuario INT,
+descripcion TEXT,
+fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
+-- 11. Tabla de notificaciones
+CREATE TABLE notificaciones (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_usuario INT,
+mensaje TEXT NOT NULL,
+leido BOOLEAN DEFAULT FALSE,
+fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
 
-INSERT INTO roles(nombre) VALUES
+-- 12. Tabla de reportes
+CREATE TABLE reportes (
+id INT AUTO_INCREMENT PRIMARY KEY,
+tipo VARCHAR(50),
+id_usuario INT,
+fecha_generado DATETIME DEFAULT CURRENT_TIMESTAMP,
+archivo_pdf VARCHAR(255),
+FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+
+-- 13. Inserción de roles base
+INSERT INTO roles (nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),
