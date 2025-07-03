@@ -3,11 +3,11 @@
 require_once '../../conexion_db.php';
 
 class Usuario {
-    public function registrarUsuario($nombre, $correo, $password, $rol) {
+    public function registrarUsuario($nombres, $apellidos, $correo, $password, $rol) {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sqlInsert = "INSERT INTO usuarios (nombre, correo, password, id_rol) 
-                      VALUES ('$nombre', '$correo', '$password', '$rol')";
+        $sqlInsert = "INSERT INTO usuarios (nombres, apellidos, correo, password, id_rol) 
+                      VALUES ('$nombres', '$apellidos', '$correo', '$password', '$rol')";
         $resultado = $conexion->exec($sqlInsert);
         $conn->desconectar();
         return $resultado;
@@ -16,9 +16,9 @@ class Usuario {
     public function obtenerTodosLosUsuarios() {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sql = "SELECT u.id, u.nombre, u.correo, r.nombre as rol FROM usuarios u JOIN roles r ON u.id_rol = r.id";
-        $result = $conexion->query($sql);
-        $usuarios = $result->fetchAll(PDO::FETCH_ASSOC);
+        $sqlSelect = "SELECT u.id, u.nombres, u.apellidos, u.correo, r.nombre as rol FROM usuarios u JOIN roles r ON u.id_rol = r.id";
+        $stmt = $conexion->query($sqlSelect);
+        $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $conn->desconectar();
         return $usuarios;
     }
@@ -26,20 +26,22 @@ class Usuario {
     public function obtenerUsuarioPorId($id) {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sql = "SELECT * FROM usuarios WHERE id = ?";
-        $stmt = $conexion->prepare($sql);
-        $stmt->execute([$id]);
+        $sqlSelect = "SELECT * FROM usuarios WHERE id = '$id'";
+        $stmt = $conexion->query($sqlSelect);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
         $conn->desconectar();
         return $usuario;
     }
 
-    public function actualizarUsuario($id, $nombre, $correo, $rol) {
+    public function actualizarUsuario($id, $nombres, $apellidos, $correo, $rol) {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sql = "UPDATE usuarios SET nombre = ?, correo = ?, id_rol = ? WHERE id = ?";
-        $stmt = $conexion->prepare($sql);
-        $resultado = $stmt->execute([$nombre, $correo, $rol, $id]);
+        $sqlUpdate = "UPDATE usuarios SET 
+                                nombres = '$nombres', 
+                                apellidos = '$apellidos', 
+                                correo = '$correo', 
+                                id_rol = '$rol' WHERE id = '$id'";
+        $resultado = $conexion->exec($sqlUpdate);
         $conn->desconectar();
         return $resultado;
     }
@@ -47,9 +49,8 @@ class Usuario {
     public function eliminarUsuario($id) {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sql = "DELETE FROM usuarios WHERE id = ?";
-        $stmt = $conexion->prepare($sql);
-        $resultado = $stmt->execute([$id]);
+        $sqlDelete = "DELETE FROM usuarios WHERE id = '$id'";
+        $resultado = $conexion->exec($sqlDelete);
         $conn->desconectar();
         return $resultado;
     }

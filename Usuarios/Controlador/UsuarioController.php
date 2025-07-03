@@ -6,7 +6,8 @@ class UsuarioController {
     public function registrarUsuario(array $datos) {
         $usuario = new Usuario();
         $resultado = $usuario->registrarUsuario(
-            $datos['nombre'],
+            $datos['nombres'],
+            $datos['apellidos'],
             $datos['correo'],
             password_hash($datos['password'], PASSWORD_DEFAULT),
             $datos['id_rol']
@@ -24,7 +25,8 @@ class UsuarioController {
         $usuario = new Usuario();
         $resultado = $usuario->actualizarUsuario(
             $datos['id'],
-            $datos['nombre'],
+            $datos['nombres'],
+            $datos['apellidos'],
             $datos['correo'],
             $datos['id_rol']
         );
