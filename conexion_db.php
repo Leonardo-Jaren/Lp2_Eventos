@@ -9,7 +9,7 @@ class ConexionDB {
     public function __construct() {
         $this->dns = "mysql:host=localhost;dbname=lp2_eventos";
         $this->usuario = "root";
-        $this->contrasena = "MonsterLegends123";
+        $this->contrasena = "";
     }
 
     public function conectar() {

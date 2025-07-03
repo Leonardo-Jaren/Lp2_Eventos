@@ -90,6 +90,10 @@ class Reserva {
         return $resultado['total'] == 0;
     }
 
+    public function verificarDisponibilidadEdicion($fecha, $hora_inicio, $hora_fin, $id_evento_excluir) {
+        return $this->verificarDisponibilidad($fecha, $hora_inicio, $hora_fin, null, $id_evento_excluir);
+    }
+
     public function editarReserva($id_evento, $titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_recurso = null) {
         try {
             $this->conexion->beginTransaction();
@@ -253,7 +257,11 @@ class Reserva {
 
         $stmt = $this->conexion->prepare($sql);
         foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value);
+            if (is_array($value)) {
+                $stmt->bindValue($key, implode(',', $value));
+            } else {
+                $stmt->bindValue($key, $value);
+            }
         }
         
         $stmt->execute();
@@ -288,7 +296,7 @@ class Reserva {
     }
 
     // Obtener historial de reservas
-    public function obtenerHistorialReservas($id_usuario = null, $limite = 50) {
+    public function obtenerHistorialReservas($filtros = []) {
         $sql = "SELECT e.*, r.id as reserva_id, r.estado as estado_reserva, 
                        u.nombre as organizador, rec.tipo as tipo_recurso
                 FROM eventos e 
@@ -299,14 +307,36 @@ class Reserva {
 
         $params = [];
 
-        if ($id_usuario) {
+        // Filtro por usuario
+        if (!empty($filtros['id_usuario'])) {
             $sql .= " AND e.id_usuario = :id_usuario";
-            $params[':id_usuario'] = $id_usuario;
+            $params[':id_usuario'] = $filtros['id_usuario'];
         }
 
+        // Filtro por estado
+        if (!empty($filtros['estado'])) {
+            $sql .= " AND e.estado = :estado";
+            $params[':estado'] = $filtros['estado'];
+        }
+
+        // Filtro por fecha desde
+        if (!empty($filtros['desde'])) {
+            $sql .= " AND e.fecha_evento >= :fecha_desde";
+            $params[':fecha_desde'] = $filtros['desde'];
+        }
+
+        // Filtro por fecha hasta
+        if (!empty($filtros['hasta'])) {
+            $sql .= " AND e.fecha_evento <= :fecha_hasta";
+            $params[':fecha_hasta'] = $filtros['hasta'];
+        }
+
+        $limite = isset($filtros['limite']) ? (int)$filtros['limite'] : 50;
         $sql .= " ORDER BY e.fecha_evento DESC LIMIT :limite";
 
         $stmt = $this->conexion->prepare($sql);
+        
+        // Bind de parámetros
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
         }
@@ -400,7 +430,11 @@ class Reserva {
 
         $stmt = $this->conexion->prepare($sql);
         foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value);
+            if (is_array($value)) {
+                $stmt->bindValue($key, implode(',', $value));
+            } else {
+                $stmt->bindValue($key, $value);
+            }
         }
         
         $stmt->execute();

@@ -11,6 +11,22 @@ $mensaje = $_SESSION['mensaje'] ?? '';
 $tipo_mensaje = $_SESSION['tipo_mensaje'] ?? '';
 unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
 
+// Manejar ver detalle de evento
+$evento_detalle = null;
+if (isset($_GET['ver_detalle'])) {
+    $reservaModel = new Reserva();
+    try {
+        $evento_detalle = $reservaModel->obtenerEventoPorId($_GET['ver_detalle']);
+        if (!$evento_detalle) {
+            $mensaje = "Evento no encontrado";
+            $tipo_mensaje = 'error';
+        }
+    } catch (Exception $e) {
+        $mensaje = "Error al cargar el evento: " . $e->getMessage();
+        $tipo_mensaje = 'error';
+    }
+}
+
 // Obtener reservas con filtros
 $reservaModel = new Reserva();
 $filtros = [
@@ -23,14 +39,10 @@ $filtros = [
 
 try {
     $reservas = $reservaModel->obtenerReservas($filtros);
-    // Si no hay resultados con filtros, intentar obtener todas las reservas
     if (empty($reservas) && empty(array_filter($filtros))) {
         $reservas = $reservaModel->obtenerTodasReservas();
     }
-    // Debug temporal - comentar en producción
-    // echo "<!-- Debug: Se encontraron " . count($reservas) . " reservas -->";
 } catch (Exception $e) {
-    // Intentar método fallback
     try {
         $reservas = $reservaModel->obtenerTodasReservas();
     } catch (Exception $e2) {
@@ -38,8 +50,6 @@ try {
         $mensaje = "Error al cargar las reservas: " . $e->getMessage();
         $tipo_mensaje = 'error';
     }
-    // Debug temporal - comentar en producción  
-    // echo "<!-- Debug Error: " . $e->getMessage() . " -->";
 }
 ?>
 
@@ -196,10 +206,10 @@ try {
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex space-x-1">
-                                            <button type="button" class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors duration-200" 
-                                                    onclick="verDetalle(<?php echo $reserva['id']; ?>)" title="Ver detalles">
+                                            <a href="?ver_detalle=<?php echo $reserva['id']; ?>" 
+                                               class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors duration-200" title="Ver detalles">
                                                 <i class="fas fa-eye text-xs"></i>
-                                            </button>
+                                            </a>
                                             <?php if ($reserva['estado'] != 'cancelado'): ?>
                                                 <a href="editarReserva.php?id=<?php echo $reserva['id']; ?>" 
                                                    class="bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition-colors duration-200" title="Editar">
@@ -209,10 +219,11 @@ try {
                                                    class="bg-gray-600 text-white p-2 rounded hover:bg-gray-700 transition-colors duration-200" title="Cambiar fecha">
                                                     <i class="fas fa-calendar-alt text-xs"></i>
                                                 </a>
-                                                <button type="button" class="bg-red-600 text-white p-2 rounded hover:bg-red-700 transition-colors duration-200" 
-                                                        onclick="confirmarCancelacion(<?php echo $reserva['id']; ?>)" title="Cancelar">
+                                                <a href="cancelarReserva.php?id=<?php echo $reserva['id']; ?>" 
+                                                   class="bg-red-600 text-white p-2 rounded hover:bg-red-700 transition-colors duration-200" title="Cancelar"
+                                                   onclick="return confirm('¿Está seguro que desea cancelar esta reserva?')">
                                                     <i class="fas fa-ban text-xs"></i>
-                                                </button>
+                                                </a>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -240,211 +251,50 @@ try {
     </div>
 </div>
 
-<!-- Modal para ver detalles -->
-<div id="modalDetalle" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+<!-- Modal para ver detalles (PHP) -->
+<?php if ($evento_detalle): ?>
+<div id="modalDetalle" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-gray-900">Detalles del Evento</h3>
-            <button onclick="cerrarModalDetalle()" class="text-gray-400 hover:text-gray-600">
+            <a href="?" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        <div id="detalleContent" class="mb-4">
-            <div class="text-center py-8">
-                <i class="fas fa-spinner fa-spin fa-2x text-blue-500"></i>
-                <p class="mt-2 text-gray-600">Cargando detalles...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para confirmar cancelación -->
-<div id="modalCancelar" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-900">Confirmar Cancelación</h3>
-            <button onclick="cerrarModalCancelar()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+            </a>
         </div>
         <div class="mb-4">
-            <p class="text-gray-700 mb-4">¿Está seguro que desea cancelar esta reserva?</p>
-            <div class="mb-4">
-                <label for="motivoCancelacion" class="block text-sm font-medium text-gray-700 mb-2">Motivo de cancelación (opcional)</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
-                          id="motivoCancelacion" rows="3"></textarea>
-            </div>
-            <div class="mb-4">
-                <label for="penalidadPorcentaje" class="block text-sm font-medium text-gray-700 mb-2">Penalidad (%)</label>
-                <input type="number" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
-                       id="penalidadPorcentaje" min="0" max="100" value="0">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-800">Información del Evento</h4>
+                    <div class="space-y-2">
+                        <p class="text-gray-700"><span class="font-medium">Título:</span> <?php echo htmlspecialchars($evento_detalle['titulo']); ?></p>
+                        <p class="text-gray-700"><span class="font-medium">Descripción:</span> <?php echo htmlspecialchars($evento_detalle['descripcion'] ?? '') ?: 'Sin descripción'; ?></p>
+                        <p class="text-gray-700">
+                            <span class="font-medium">Estado:</span> 
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full <?php 
+                                echo $evento_detalle['estado'] == 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 
+                                    ($evento_detalle['estado'] == 'confirmado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'); 
+                            ?>"><?php echo ucfirst($evento_detalle['estado']); ?></span>
+                        </p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-800">Detalles de la Reserva</h4>
+                    <div class="space-y-2">
+                        <p class="text-gray-700"><span class="font-medium">Fecha:</span> <?php echo date('d/m/Y', strtotime($evento_detalle['fecha_evento'])); ?></p>
+                        <p class="text-gray-700"><span class="font-medium">Hora:</span> <?php echo date('H:i', strtotime($evento_detalle['hora_inicio'])); ?> - <?php echo date('H:i', strtotime($evento_detalle['hora_fin'])); ?></p>
+                        <p class="text-gray-700"><span class="font-medium">Organizador:</span> <?php echo htmlspecialchars($evento_detalle['organizador']); ?></p>
+                        <p class="text-gray-700"><span class="font-medium">Recurso:</span> <?php echo htmlspecialchars($evento_detalle['tipo_recurso'] ?? '') ?: 'Sin recurso asignado'; ?></p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3">
-            <button onclick="cerrarModalCancelar()" 
-                    class="bg-gray-500 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
-                Cancelar
-            </button>
-            <button id="btnConfirmarCancelacion" 
-                    class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
-                <i class="fas fa-ban mr-2"></i> Cancelar Reserva
-            </button>
+        <div class="flex justify-end">
+            <a href="?" class="bg-gray-500 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
+                Cerrar
+            </a>
         </div>
     </div>
 </div>
-
-<script>
-let eventoIdACancelar = null;
-
-// Funciones para manejar modales
-function mostrarModalDetalle() {
-    document.getElementById('modalDetalle').classList.remove('hidden');
-}
-
-function cerrarModalDetalle() {
-    document.getElementById('modalDetalle').classList.add('hidden');
-}
-
-function mostrarModalCancelar() {
-    document.getElementById('modalCancelar').classList.remove('hidden');
-}
-
-function cerrarModalCancelar() {
-    document.getElementById('modalCancelar').classList.add('hidden');
-}
-
-function verDetalle(idEvento) {
-    const content = document.getElementById('detalleContent');
-    
-    content.innerHTML = `
-        <div class="text-center py-8">
-            <i class="fas fa-spinner fa-spin fa-2x text-blue-500"></i>
-            <p class="mt-2 text-gray-600">Cargando detalles...</p>
-        </div>
-    `;
-    
-    mostrarModalDetalle();
-
-    fetch(`../Controlador/ReservaController.php?accion=obtener_evento&id=${idEvento}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const evento = data.evento;
-                content.innerHTML = `
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <h4 class="text-lg font-semibold text-gray-800">Información del Evento</h4>
-                            <div class="space-y-2">
-                                <p class="text-gray-700"><span class="font-medium">Título:</span> ${evento.titulo}</p>
-                                <p class="text-gray-700"><span class="font-medium">Descripción:</span> ${evento.descripcion || 'Sin descripción'}</p>
-                                <p class="text-gray-700">
-                                    <span class="font-medium">Estado:</span> 
-                                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ${getBadgeClass(evento.estado)}">${evento.estado}</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <h4 class="text-lg font-semibold text-gray-800">Detalles de la Reserva</h4>
-                            <div class="space-y-2">
-                                <p class="text-gray-700"><span class="font-medium">Fecha:</span> ${formatDate(evento.fecha_evento)}</p>
-                                <p class="text-gray-700"><span class="font-medium">Hora:</span> ${formatTime(evento.hora_inicio)} - ${formatTime(evento.hora_fin)}</p>
-                                <p class="text-gray-700"><span class="font-medium">Organizador:</span> ${evento.organizador}</p>
-                                <p class="text-gray-700"><span class="font-medium">Recurso:</span> ${evento.tipo_recurso || 'Sin recurso asignado'}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-                        <i class="fas fa-exclamation-triangle mr-2"></i> ${data.message}
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            content.innerHTML = `
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Error al cargar los detalles
-                </div>
-            `;
-            console.error('Error:', error);
-        });
-}
-
-function confirmarCancelacion(idEvento) {
-    eventoIdACancelar = idEvento;
-    mostrarModalCancelar();
-}
-
-document.getElementById('btnConfirmarCancelacion').addEventListener('click', function() {
-    if (!eventoIdACancelar) return;
-
-    const motivo = document.getElementById('motivoCancelacion').value;
-    const penalidad = document.getElementById('penalidadPorcentaje').value;
-
-    const formData = new FormData();
-    formData.append('id_evento', eventoIdACancelar);
-    formData.append('motivo_cancelacion', motivo);
-    formData.append('penalidad', penalidad);
-    formData.append('ajax', '1');
-
-    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Cancelando...';
-    this.disabled = true;
-
-    fetch('../Controlador/ReservaController.php?accion=cancelar', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error: ' + data.message);
-            this.innerHTML = '<i class="fas fa-ban mr-2"></i> Cancelar Reserva';
-            this.disabled = false;
-        }
-    })
-    .catch(error => {
-        alert('Error al procesar la cancelación');
-        this.innerHTML = '<i class="fas fa-ban mr-2"></i> Cancelar Reserva';
-        this.disabled = false;
-        console.error('Error:', error);
-    });
-});
-
-function getBadgeClass(estado) {
-    switch (estado) {
-        case 'pendiente': return 'bg-yellow-100 text-yellow-800';
-        case 'confirmado': return 'bg-green-100 text-green-800';
-        case 'cancelado': return 'bg-red-100 text-red-800';
-        default: return 'bg-gray-100 text-gray-800';
-    }
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES');
-}
-
-function formatTime(timeString) {
-    return timeString.substring(0, 5);
-}
-
-// Cerrar modales al hacer clic fuera de ellos
-document.getElementById('modalDetalle').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModalDetalle();
-    }
-});
-
-document.getElementById('modalCancelar').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModalCancelar();
-    }
-});
-</script>
+<?php endif; ?>
 
 <?php include '../../layouts/footer.php'; ?>
