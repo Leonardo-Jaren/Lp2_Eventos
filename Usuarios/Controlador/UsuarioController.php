@@ -13,7 +13,6 @@ class UsuarioController {
             $datos['id_rol']
         );
         if ($resultado) {
-            // Redirigir al dashboard después del registro exitoso
             header("Location: ../../dashboard.php");
             exit();
         } else {

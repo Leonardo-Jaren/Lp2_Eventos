@@ -18,6 +18,21 @@ id_rol INT,
 FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
+-- Tabla para permisos
+
+create table permisos (
+id int auto_increment primary key,
+nombre_permiso varchar(100),
+descripcion text
+);
+
+-- Tabla rol_permiso
+create table rol_permiso (
+rol_id INT,
+permiso_id INT,
+foreign key (rol_id) references roles(id),
+FOREIGN KEY (permiso_id) REFERENCES permisos(id)
+);
 -- 3. Tabla de eventos
 CREATE TABLE eventos (
 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -82,17 +97,6 @@ estado ENUM('activo', 'finalizado') DEFAULT 'activo',
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
--- 9. Tabla de calificaciones
-CREATE TABLE calificaciones (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_evento INT,
-id_usuario INT,
-puntuacion INT CHECK (puntuacion BETWEEN 1 AND 5),
-comentario TEXT,
-FOREIGN KEY (id_evento) REFERENCES eventos(id),
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
 -- 10. Tabla de quejas
 CREATE TABLE quejas (
 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -122,8 +126,8 @@ archivo_pdf VARCHAR(255),
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
-
-INSERT INTO roles(nombre) VALUES
+-- 13. Inserción de roles base
+INSERT INTO roles (nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),
