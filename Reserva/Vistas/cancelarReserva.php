@@ -3,11 +3,15 @@ session_start();
 $titulo_pagina = "Cancelar Reserva";
 include '../../layouts/header.php';
 
+require_once '../Modelos/Reserva.php';
+
+$mensaje = $_SESSION['mensaje'] ?? '';
+$tipo_mensaje = $_SESSION['tipo_mensaje'] ?? '';
+unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
+
 if (!isset($evento) || !$evento) {
     $id_evento = $_GET['id'] ?? '';
     if ($id_evento) {
-        require_once '../Modelos/Reserva.php';
-        
         try {
             $reservaModel = new Reserva();
             $evento = $reservaModel->obtenerEventoPorId($id_evento);
@@ -17,7 +21,6 @@ if (!isset($evento) || !$evento) {
     }
 }
 
-// Verificar si se pudo cargar el evento
 if (!isset($evento) || !$evento) {
     echo '<div class="container mx-auto px-4 py-8">
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
@@ -29,7 +32,6 @@ if (!isset($evento) || !$evento) {
     exit;
 }
 
-// Verificar si el evento ya está cancelado
 if ($evento['estado'] === 'cancelado') {
     echo '<div class="container mx-auto px-4 py-8">
             <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg">
@@ -41,13 +43,205 @@ if ($evento['estado'] === 'cancelado') {
     exit;
 }
 
-// Calcular penalidad basada en días de anticipación
 $fecha_evento = new DateTime($evento['fecha_evento']);
 $hoy = new DateTime();
 $dias_anticipacion = $hoy->diff($fecha_evento)->days;
 
 $penalidad_sugerida = 0;
 $mensaje_penalidad = '';
+
+if ($dias_anticipacion < 1) {
+    $penalidad_sugerida = 50;
+    $mensaje_penalidad = 'Cancelación el mismo día: penalidad alta';
+} elseif ($dias_anticipacion < 3) {
+    $penalidad_sugerida = 30;
+    $mensaje_penalidad = 'Cancelación con menos de 3 días: penalidad media';
+} elseif ($dias_anticipacion < 7) {
+    $penalidad_sugerida = 15;
+    $mensaje_penalidad = 'Cancelación con menos de 7 días: penalidad baja';
+} else {
+    $penalidad_sugerida = 5;
+    $mensaje_penalidad = 'Cancelación con suficiente anticipación';
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirmar_cancelacion'])) {
+    if (isset($_POST['acepto_terminos']) && $_POST['acepto_terminos'] == '1') {
+        $_SESSION['mensaje'] = 'Proceda con la cancelación en el controlador';
+        $_SESSION['tipo_mensaje'] = 'info';
+        header("Location: ../Controlador/ReservaController.php?accion=cancelar");
+        exit;
+    } else {
+        $mensaje = 'Debe aceptar los términos y condiciones para proceder con la cancelación';
+        $tipo_mensaje = 'error';
+    }
+}
+?>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg">
+            <div class="bg-red-500 text-white p-6 rounded-t-lg">
+                <h1 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-ban mr-3"></i>
+                    Cancelar Reserva/Evento
+                </h1>
+                <p class="mt-2 text-red-100">Esta acción no se puede deshacer</p>
+            </div>
+            
+            <div class="p-6">
+                <?php if ($mensaje): ?>
+                    <div class="mb-6 p-4 rounded-lg <?php echo $tipo_mensaje == 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'; ?>">
+                        <div class="flex items-center">
+                            <i class="fas fa-<?php echo $tipo_mensaje == 'success' ? 'check-circle' : 'exclamation-triangle'; ?> mr-2"></i>
+                            <span><?php echo htmlspecialchars($mensaje); ?></span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h2 class="text-lg font-semibold text-blue-900 mb-3 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Información del Evento a Cancelar
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium text-blue-800">Título:</span>
+                            <span class="ml-2 text-blue-700"><?php echo htmlspecialchars($evento['titulo']); ?></span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-blue-800">Estado Actual:</span>
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $evento['estado'] == 'confirmado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'; ?>">
+                                <?php echo ucfirst($evento['estado']); ?>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-blue-800">Fecha:</span>
+                            <span class="ml-2 text-blue-700"><?php echo date('d/m/Y', strtotime($evento['fecha_evento'])); ?></span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-blue-800">Horario:</span>
+                            <span class="ml-2 text-blue-700"><?php echo substr($evento['hora_inicio'], 0, 5); ?> - <?php echo substr($evento['hora_fin'], 0, 5); ?></span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-blue-800">Organizador:</span>
+                            <span class="ml-2 text-blue-700"><?php echo htmlspecialchars($evento['organizador']); ?></span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-blue-800">Días de Anticipación:</span>
+                            <span class="ml-2 text-blue-700"><?php echo $dias_anticipacion; ?> días</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="../Controlador/ReservaController.php?accion=cancelar">
+                    <input type="hidden" name="id_evento" value="<?php echo $evento['id']; ?>">
+                    
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="motivo_cancelacion" class="block text-sm font-medium text-gray-700 mb-2">Motivo de Cancelación *</label>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                      id="motivo_cancelacion" name="motivo_cancelacion" rows="4" required
+                                      placeholder="Describa el motivo de la cancelación..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Este motivo será registrado en el historial del evento</p>
+                        </div>
+
+                        <div>
+                            <label for="penalidad" class="block text-sm font-medium text-gray-700 mb-2">Penalidad por Cancelación (%)</label>
+                            <div class="relative">
+                                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                       id="penalidad" name="penalidad" min="0" max="100" value="<?php echo $penalidad_sugerida; ?>">
+                                <span class="absolute right-3 top-2 text-gray-400">%</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <?php echo $mensaje_penalidad; ?> (Sugerida: <?php echo $penalidad_sugerida; ?>%)
+                            </p>
+                        </div>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="text-lg font-medium text-yellow-900 mb-3 flex items-center">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Información Importante sobre la Cancelación
+                            </h3>
+                            <ul class="text-sm text-yellow-800 space-y-1">
+                                <li>• <strong>Esta acción es irreversible:</strong> Una vez cancelado, el evento no puede ser restaurado</li>
+                                <li>• <strong>Notificaciones:</strong> Todos los participantes serán notificados automáticamente</li>
+                                <li>• <strong>Recursos:</strong> Los recursos asignados quedarán disponibles nuevamente</li>
+                                <li>• <strong>Penalidad:</strong> Se aplicará el porcentaje de penalidad indicado</li>
+                                <li>• <strong>Historial:</strong> La cancelación quedará registrada permanentemente</li>
+                                <li>• <strong>Reembolsos:</strong> Los reembolsos se procesarán según las políticas establecidas</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h3 class="text-lg font-medium text-red-900 mb-3 flex items-center">
+                                <i class="fas fa-calculator mr-2"></i>
+                                Resumen de Cancelación
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-red-800">Evento:</span>
+                                        <span class="text-red-700"><?php echo htmlspecialchars($evento['titulo']); ?></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-red-800">Fecha del evento:</span>
+                                        <span class="text-red-700"><?php echo date('d/m/Y', strtotime($evento['fecha_evento'])); ?></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-red-800">Días de anticipación:</span>
+                                        <span class="text-red-700"><?php echo $dias_anticipacion; ?> días</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-red-800">Estado actual:</span>
+                                        <span class="text-red-700"><?php echo ucfirst($evento['estado']); ?></span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-red-800">Nuevo estado:</span>
+                                        <span class="text-red-700 font-bold">CANCELADO</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-red-800">Penalidad sugerida:</span>
+                                        <span class="text-red-700"><?php echo $penalidad_sugerida; ?>%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <label class="flex items-start">
+                                <input type="checkbox" name="acepto_terminos" value="1" required
+                                       class="mt-1 mr-3 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                <span class="text-sm text-gray-700">
+                                    <strong>Acepto los términos y condiciones de cancelación:</strong> 
+                                    Entiendo que esta cancelación es definitiva, que se aplicará la penalidad indicada, 
+                                    y que todos los participantes serán notificados del cambio. Confirmo que tengo 
+                                    autorización para cancelar este evento.
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button type="submit" name="confirmar_cancelacion" value="1"
+                                    class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center justify-center"
+                                    onclick="return confirm('¿Está completamente seguro de que desea cancelar este evento? Esta acción NO se puede deshacer.')">
+                                <i class="fas fa-ban mr-2"></i>
+                                Confirmar Cancelación
+                            </button>
+                            <a href="verReservas.php" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200 text-center flex items-center justify-center">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                No Cancelar - Volver
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include '../../layouts/footer.php'; ?>
 
 if ($dias_anticipacion < 1) {
     $penalidad_sugerida = 50;
@@ -273,106 +467,5 @@ if ($dias_anticipacion < 1) {
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('formCancelarReserva');
-    const btnCancelar = document.getElementById('btnCancelar');
-    const modalConfirmacion = document.getElementById('modalConfirmacion');
-    const btnConfirmarCancelacion = document.getElementById('btnConfirmarCancelacion');
-    const btnCerrarModal = document.getElementById('btnCerrarModal');
-    const motivoTextarea = document.getElementById('motivo_cancelacion');
-    const confirmarCheckbox = document.getElementById('confirmar_cancelacion');
-
-    // Validar campos del formulario
-    function validarFormulario() {
-        const motivo = motivoTextarea.value.trim();
-        const confirmado = confirmarCheckbox.checked;
-        
-        btnCancelar.disabled = !motivo || !confirmado;
-    }
-
-    // Event listeners para validación
-    motivoTextarea.addEventListener('input', validarFormulario);
-    confirmarCheckbox.addEventListener('change', validarFormulario);
-
-    // Validación inicial
-    validarFormulario();
-
-    // Mostrar modal de confirmación
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        modalConfirmacion.classList.remove('hidden');
-    });
-
-    // Cerrar modal
-    btnCerrarModal.addEventListener('click', function() {
-        modalConfirmacion.classList.add('hidden');
-    });
-
-    // Confirmar cancelación
-    btnConfirmarCancelacion.addEventListener('click', function() {
-        modalConfirmacion.classList.add('hidden');
-        procesarCancelacion();
-    });
-
-    function procesarCancelacion() {
-        const alertMessage = document.getElementById('alertMessage');
-        const formData = new FormData(form);
-
-        // Mostrar loading
-        form.style.opacity = '0.6';
-        form.style.pointerEvents = 'none';
-        btnCancelar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Cancelando...';
-
-        fetch('../Controlador/ReservaController.php?accion=cancelar', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            form.style.opacity = '1';
-            form.style.pointerEvents = 'auto';
-            btnCancelar.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Cancelar Reserva';
-
-            if (data.success) {
-                alertMessage.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6';
-                alertMessage.innerHTML = '<i class="fas fa-check-circle mr-2"></i> ' + data.message;
-                alertMessage.classList.remove('hidden');
-                
-                // Redirigir después de 2 segundos
-                setTimeout(() => {
-                    window.location.href = 'verReservas.php';
-                }, 2000);
-            } else {
-                alertMessage.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6';
-                alertMessage.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> ' + data.message;
-                alertMessage.classList.remove('hidden');
-            }
-
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        })
-        .catch(error => {
-            form.style.opacity = '1';
-            form.style.pointerEvents = 'auto';
-            btnCancelar.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Cancelar Reserva';
-            
-            alertMessage.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6';
-            alertMessage.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Error al procesar la cancelación';
-            alertMessage.classList.remove('hidden');
-            
-            console.error('Error:', error);
-        });
-    }
-
-    // Cerrar modal haciendo clic fuera de él
-    modalConfirmacion.addEventListener('click', function(e) {
-        if (e.target === modalConfirmacion) {
-            modalConfirmacion.classList.add('hidden');
-        }
-    });
-});
-</script>
 
 <?php include '../../layouts/footer.php'; ?>
