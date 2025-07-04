@@ -5,10 +5,9 @@ if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
-require_once '../../nav.php';
 
 $titulo_pagina = "Cambiar Fecha de Reserva";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 require_once '../Modelos/Reserva.php';
 
@@ -73,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             try {
                 $reservaModel = new Reserva();
-                $disponible = $reservaModel->verificarDisponibilidadEdicion($nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $evento['id']);
+                $disponible = $reservaModel->verificarDisponibilidad($nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $evento['id_usuario'], $evento['id']);
                 if ($disponible) {
                     $verificacion_resultado = 'Nueva fecha/hora disponible. Puede proceder con el cambio.';
                     $verificacion_tipo = 'success';

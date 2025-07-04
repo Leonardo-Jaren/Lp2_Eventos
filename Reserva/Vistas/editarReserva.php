@@ -5,10 +5,9 @@ if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
-require_once '../../nav.php';
 
 $titulo_pagina = "Editar Reserva";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 $mensaje = $_SESSION['mensaje'] ?? '';
 $tipo_mensaje = $_SESSION['tipo_mensaje'] ?? '';
@@ -66,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             try {
                 $reservaModel = new Reserva();
-                $disponible = $reservaModel->verificarDisponibilidadEdicion($fecha, $hora_inicio, $hora_fin, $id_evento_actual);
+                $disponible = $reservaModel->verificarDisponibilidad($fecha, $hora_inicio, $hora_fin, $evento['id_usuario'], $id_evento_actual);
                 if ($disponible) {
                     $verificacion_resultado = 'Horario disponible. Puede proceder a actualizar la reserva.';
                     $verificacion_tipo = 'success';
@@ -158,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
 
-                    <div>
+                    <!-- <div>
                         <label for="id_recurso" class="block text-sm font-medium text-gray-700 mb-2">Recurso</label>
                         <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" 
                                 id="id_recurso" name="id_recurso">
@@ -167,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <p class="text-xs text-gray-500 mt-1">
                             Recurso actual: <?php echo $evento['tipo_recurso'] ? htmlspecialchars($evento['tipo_recurso']) : 'Sin recurso'; ?>
                         </p>
-                    </div>
+                    </div> -->
 
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <h3 class="text-lg font-medium text-gray-900 mb-3 flex items-center">
@@ -207,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </h3>
                         <ul class="text-sm text-yellow-800 space-y-1">
                             <li>• Si cambia la fecha o hora, verifique la disponibilidad antes de guardar</li>
-                            <li>• Los cambios pueden afectar recursos asignados y notificaciones</li>
+                            <!-- <li>• Los cambios pueden afectar recursos asignados y notificaciones</li> -->
                             <li>• Este evento tiene estado: <strong><?php echo ucfirst($evento['estado']); ?></strong></li>
                         </ul>
                     </div>

@@ -5,10 +5,9 @@ if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
-require_once '../../nav.php';
 
 $titulo_pagina = "Crear Nueva Reserva";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 require_once '../Modelos/Reserva.php';
 
@@ -27,11 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fecha = $_POST['fecha_evento'] ?? '';
         $hora_inicio = $_POST['hora_inicio'] ?? '';
         $hora_fin = $_POST['hora_fin'] ?? '';
-        $id_usuario = $_SESSION['id']; // Usar el ID del usuario de la sesión
+        $id_usuario = $_POST['id_usuario'] ?? '';
         
         $datos_formulario = $_POST;
         
-        if (!$fecha || !$hora_inicio || !$hora_fin) {
+        if (!$fecha || !$hora_inicio || !$hora_fin || !$id_usuario) {
             $verificacion_resultado = 'Todos los campos son requeridos para verificar disponibilidad';
             $verificacion_tipo = 'warning';
         } elseif ($hora_fin <= $hora_inicio) {
@@ -75,17 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             <?php endif; ?>
 
-            <!-- Debug: Información del usuario (remover en producción) -->
-            <div class="mb-4 p-3 bg-gray-100 border border-gray-300 rounded-lg text-sm">
-                <strong>Debug Info:</strong> 
-                Usuario ID: <?php echo $_SESSION['id'] ?? 'No definido'; ?> | 
-                Usuario: <?php echo $_SESSION['nombres'] ?? 'No definido'; ?>
-            </div>
-
             <form method="POST" action="../Controlador/ReservaController.php?accion=crear">
-                <!-- Campo oculto con el ID del usuario autenticado -->
-                <input type="hidden" name="id_usuario" value="<?php echo $_SESSION['id']; ?>">
-                
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label for="titulo" class="block text-sm font-medium text-gray-700 mb-2">Título del Evento *</label>
@@ -121,17 +110,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="id_usuario" class="block text-sm font-medium text-gray-700 mb-2">Organizador *</label>
-                            <input type="hidden" name="id_usuario" value="<?php echo $_SESSION['id']; ?>">
-                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" 
-                                   value="<?php echo $_SESSION['nombre'] ?? 'Usuario Actual'; ?>" readonly>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                    id="id_usuario" name="id_usuario" required>
+                                <option value="">Seleccionar organizador...</option>
+                                <option value="1" <?php echo ($datos_formulario['id_usuario'] ?? '') == '1' ? 'selected' : ''; ?>>Usuario Demo</option>
+                            </select>
                         </div>
-                        <div>
+                        <!-- <div>
                             <label for="id_recurso" class="block text-sm font-medium text-gray-700 mb-2">Recurso (Opcional)</label>
                             <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                                     id="id_recurso" name="id_recurso">
                                 <option value="">Sin recurso específico</option>
                             </select>
-                        </div>
+                        </div> -->
                     </div>
 
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -162,7 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center"
+                                <?php echo ($verificacion_tipo !== 'success') ? 'disabled' : ''; ?>>
                             <i class="fas fa-save mr-2"></i>
                             Crear Reserva
                         </button>
