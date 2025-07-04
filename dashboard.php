@@ -31,30 +31,6 @@ require_once 'nav.php';
 ?>
 
 <div class="min-h-screen bg-gray-50">
-    <!-- Banner de Dashboard -->
-    <!-- <div class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Sistema para Gestión de Eventos</h1>
-                    <p class="text-gray-600">Panel de control del sistema de eventos</p>
-                </div>
-                <div class="hidden md:flex items-center space-x-4">
-                    <div class="bg-blue-50 rounded-lg px-4 py-2">
-                        <p class="text-sm text-blue-600 font-medium">
-                            <i class="fas fa-calendar-check mr-1"></i>
-                            Sistema activo
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Fecha actual:</p>
-                        <p class="font-medium text-gray-900"><?php echo date('d/m/Y'); ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Mensaje de Bienvenida -->
         <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 mb-8">
@@ -140,7 +116,7 @@ require_once 'nav.php';
         <!-- Estadísticas Rápidas -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Estadísticas del Sistema</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <?php
                 // Obtener estadísticas
                 $stats = [];
@@ -154,12 +130,12 @@ require_once 'nav.php';
                 $stats['proveedores'] = $result->fetch()['total'] ?? 0;
                 ?>
 
-                <div class="text-center">
+                <div class="flex flex-col items-center justify-center w-full">
                     <div class="text-3xl font-bold text-blue-600"><?php echo $stats['usuarios']; ?></div>
                     <div class="text-sm text-gray-600">Usuarios</div>
                 </div>
                 
-                <div class="text-center">
+                <div class="flex flex-col items-center justify-center w-full">
                     <div class="text-3xl font-bold text-purple-600"><?php echo $stats['proveedores']; ?></div>
                     <div class="text-sm text-gray-600">Proveedores</div>
                 </div>

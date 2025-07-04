@@ -4,10 +4,24 @@ require_once '../../layouts/header.php';
 require_once '../Controlador/UsuarioController.php';
 
 $mensaje = '';
+$tipoMensaje = '';
+
 if (!empty($_POST)) {
     $usuarioController = new UsuarioController();
-    $mensaje = $usuarioController->registrarUsuario($_POST);
-    // Si hay error, $mensaje tendrá el texto, si no, habrá redirección
+    
+    require_once '../Modelos/Usuario.php';
+    $usuarioModel = new Usuario();
+    
+    if ($usuarioModel->verificarCorreoExistente($_POST['correo'])) {
+        $mensaje = "El correo electrónico ya está registrado. Por favor, use otro correo.";
+        $tipoMensaje = 'error';
+    } else {
+        $resultado = $usuarioController->registrarUsuario($_POST);
+        if ($resultado) {
+            $mensaje = $resultado;
+            $tipoMensaje = 'error';
+        }
+    }
 }
 ?>
 <div class="flex items-center justify-center min-h-screen bg-gray-100">

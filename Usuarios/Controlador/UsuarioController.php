@@ -2,16 +2,27 @@
 
 require_once __DIR__ . '/../Modelos/Usuario.php';
 
-class UsuarioController {
-    public function registrarUsuario(array $datos) {
-        // Validar contraseña: mínimo 8 caracteres y al menos 1 número
-        if (
-            strlen($datos['password']) < 8 ||
-            !preg_match('/\d/', $datos['password'])
-        ) {
-            return "La contraseña debe tener al menos 8 caracteres y contener al menos un número.";
+class UsuarioController
+{
+    public function registrarUsuario(array $datos)
+    {
+        
+        // Validar datos requeridos
+        if (empty($datos['nombres']) || empty($datos['apellidos']) || empty($datos['correo']) || 
+            empty($datos['password']) || empty($datos['id_rol'])) {
+                return "Todos los campos son obligatorios.";
         }
-
+            
+        // Validar formato de correo
+        if (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL)) {
+            return "El formato del correo electrónico no es válido.";
+        }
+            
+        // Validar longitud de contraseña
+        if (strlen($datos['password']) < 6) {
+            return "La contraseña debe tener al menos 6 caracteres.";
+        }
+            
         $usuario = new Usuario();
         $resultado = $usuario->registrarUsuario(
             $datos['nombres'],
@@ -19,12 +30,13 @@ class UsuarioController {
             $datos['correo'],
             password_hash($datos['password'], PASSWORD_DEFAULT),
             $datos['id_rol']
-        );  
+        );
+            
         if ($resultado) {
             header("Location: ../../dashboard.php");
             exit();
         } else {
-            return "Error al registrar el usuario.";
+            return "Error al registrar el usuario. Por favor, inténtelo de nuevo.";
         }
     }
 
