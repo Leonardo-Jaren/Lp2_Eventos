@@ -5,10 +5,9 @@ if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
-require_once '../../nav.php';
 
 $titulo_pagina = "Cancelar Reserva";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 require_once '../Modelos/Reserva.php';
 
@@ -96,7 +95,7 @@ $dias_anticipacion = $hoy->diff($fecha_evento)->days;
                 <ul class="text-yellow-700 space-y-2">
                     <li>• La cancelación es irreversible</li>
                     <li>• Se notificará a todos los participantes</li>
-                    <li>• Los recursos asignados quedarán disponibles nuevamente</li>
+                    <!-- <li>• Los recursos asignados quedarán disponibles nuevamente</li> -->
                     <?php if ($dias_anticipacion < 1): ?>
                         <li class="text-red-600 font-semibold">• <strong>Cancelación tardía:</strong> El evento es hoy o ya pasó</li>
                     <?php elseif ($dias_anticipacion < 7): ?>

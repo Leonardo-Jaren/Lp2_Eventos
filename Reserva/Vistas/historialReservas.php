@@ -1,7 +1,13 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['id'])) {
+    header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
+    exit();
+}
+
 $titulo_pagina = "Historial de Reservas";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 require_once '../Modelos/Reserva.php';
 
@@ -34,7 +40,9 @@ $filtros = [
 ];
 
 try {
-    $reservasPasadas = $reservaModel->obtenerHistorialReservas($filtros);
+    $id_usuario = !empty($filtros['id_usuario']) ? $filtros['id_usuario'] : null;
+    $limite = !empty($filtros['limite']) ? intval($filtros['limite']) : 50;
+    $reservasPasadas = $reservaModel->obtenerHistorialReservas($id_usuario, $limite);
 } catch (Exception $e) {
     $reservasPasadas = [];
     $mensaje = "Error al cargar el historial: " . $e->getMessage();

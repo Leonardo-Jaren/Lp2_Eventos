@@ -1,7 +1,13 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['id'])) {
+    header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
+    exit();
+}
+
 $titulo_pagina = "Crear Nueva Reserva";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 require_once '../Modelos/Reserva.php';
 
@@ -110,13 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <option value="1" <?php echo ($datos_formulario['id_usuario'] ?? '') == '1' ? 'selected' : ''; ?>>Usuario Demo</option>
                             </select>
                         </div>
-                        <div>
+                        <!-- <div>
                             <label for="id_recurso" class="block text-sm font-medium text-gray-700 mb-2">Recurso (Opcional)</label>
                             <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                                     id="id_recurso" name="id_recurso">
                                 <option value="">Sin recurso específico</option>
                             </select>
-                        </div>
+                        </div> -->
                     </div>
 
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">

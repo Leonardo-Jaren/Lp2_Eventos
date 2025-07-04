@@ -18,22 +18,22 @@ id_rol INT,
 FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
--- Tabla para permisos
-
-create table permisos (
+-- 3. Tabla para permisos
+CREATE TABLE permisos (
 id int auto_increment primary key,
 nombre_permiso varchar(100),
 descripcion text
 );
 
--- Tabla rol_permiso
-create table rol_permiso (
+-- 4. Tabla rol_permiso
+CREATE TABLE rol_permiso (
 rol_id INT,
 permiso_id INT,
 foreign key (rol_id) references roles(id),
 FOREIGN KEY (permiso_id) REFERENCES permisos(id)
 );
--- 3. Tabla de eventos
+
+-- 5. Tabla de eventos (principal para reservas)
 CREATE TABLE eventos (
 id INT AUTO_INCREMENT PRIMARY KEY,
 titulo VARCHAR(100) NOT NULL,
@@ -46,7 +46,7 @@ id_usuario INT,
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 4. Tabla de recursos
+-- 6. Tabla de recursos
 CREATE TABLE recursos (
 id INT AUTO_INCREMENT PRIMARY KEY,
 tipo VARCHAR(50) NOT NULL,
@@ -54,7 +54,7 @@ descripcion TEXT,
 disponible BOOLEAN DEFAULT TRUE
 );
 
--- 5. Tabla de reservas
+-- 7. Tabla de reservas (para recursos específicos)
 CREATE TABLE reservas (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_evento INT,
@@ -67,7 +67,7 @@ FOREIGN KEY (id_evento) REFERENCES eventos(id),
 FOREIGN KEY (id_recurso) REFERENCES recursos(id)
 );
 
--- 6. Tabla de proveedores
+-- 8. Tabla de proveedores
 CREATE TABLE proveedores (
 id INT AUTO_INCREMENT PRIMARY KEY,
 nombre VARCHAR(100) NOT NULL,
@@ -77,7 +77,7 @@ id_usuario INT,
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 7. Tabla de servicios_proveedor
+-- 9. Tabla de servicios_proveedor
 CREATE TABLE servicios_proveedor (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_proveedor INT,
@@ -86,7 +86,7 @@ precio DECIMAL(10,2),
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
--- 8. Tabla de contratos
+-- 10. Tabla de contratos
 CREATE TABLE contratos (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_proveedor INT,
@@ -97,7 +97,20 @@ estado ENUM('activo', 'finalizado') DEFAULT 'activo',
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
--- 10. Tabla de quejas
+-- 11. Tabla de evento_proveedores
+CREATE TABLE evento_proveedores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_evento INT NOT NULL,
+    id_servicio INT NOT NULL,
+    id_proveedor INT NOT NULL,
+    estado_participacion ENUM('pendiente', 'confirmado', 'rechazado') DEFAULT 'pendiente',
+    fecha_participacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_evento) REFERENCES eventos(id),
+    FOREIGN KEY (id_servicio) REFERENCES servicios_proveedor(id),
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+);
+
+-- 12. Tabla de quejas
 CREATE TABLE quejas (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_usuario INT,
@@ -106,7 +119,7 @@ fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 11. Tabla de notificaciones
+-- 13. Tabla de notificaciones
 CREATE TABLE notificaciones (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_usuario INT,
@@ -116,7 +129,7 @@ fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 12. Tabla de reportes
+-- 14. Tabla de reportes
 CREATE TABLE reportes (
 id INT AUTO_INCREMENT PRIMARY KEY,
 tipo VARCHAR(50),
@@ -126,30 +139,30 @@ archivo_pdf VARCHAR(255),
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 13. Inserción de roles base
+-- 15. Inserción de roles base
 INSERT INTO roles (nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),
 ('Administrador');
 
--- 14. Inserción de usuarios de ejemplo
--- IMPORTANTE: Ejecutar después de insertar los roles
-INSERT INTO usuarios (id_rol, nombres, apellidos, correo, password) VALUES
-(3, 'Juan Carlos', 'Pérez', 'juan.organizador@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-(1, 'María Elena', 'González', 'maria.cliente@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-(2, 'Carlos Alberto', 'Ramírez', 'carlos.proveedor@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-(4, 'Ana Sofía', 'Torres', 'ana.admin@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+-- 16. Inserción de usuarios de prueba
+INSERT INTO usuarios (nombres, apellidos, correo, password, id_rol) VALUES
+('Juan', 'Pérez', 'juan.perez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1),
+('María', 'González', 'maria.gonzalez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2),
+('Carlos', 'Rodríguez', 'carlos.rodriguez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3),
+('Ana', 'Martínez', 'ana.martinez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 4);
 
--- 15. Inserción de eventos de ejemplo (opcional)
--- IMPORTANTE: Ejecutar después de insertar los usuarios
-INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_usuario, estado) VALUES
-('Reunión de Planificación', 'Reunión mensual del equipo de planificación', '2025-07-15', '09:00:00', '11:00:00', 1, 'pendiente'),
-('Conferencia Anual', 'Conferencia anual de la empresa', '2025-08-20', '08:00:00', '17:00:00', 1, 'confirmado'),
-('Workshop de Tecnología', 'Capacitación en nuevas tecnologías', '2025-07-25', '14:00:00', '18:00:00', 1, 'pendiente');
+-- 17. Inserción de recursos de ejemplo
+INSERT INTO recursos (tipo, descripcion, disponible) VALUES
+('Salón', 'Salón de eventos principal con capacidad para 100 personas', TRUE),
+('Audio', 'Sistema de sonido profesional', TRUE),
+('Proyector', 'Proyector HD para presentaciones', TRUE),
+('Catering', 'Servicio de alimentación', TRUE),
+('Decoración', 'Elementos decorativos para eventos', TRUE);
 
--- NOTAS IMPORTANTES:
--- 1. Ejecutar primero todas las sentencias CREATE TABLE
--- 2. Luego ejecutar los INSERT en el orden especificado (roles -> usuarios -> eventos)
--- 3. Si hay errores de foreign key, verificar que las tablas referenciadas tengan datos
--- 4. El password usado es "password" encriptado con bcrypt (para pruebas)
+-- 18. Inserción de eventos de ejemplo
+INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, estado, id_usuario) VALUES
+('Conferencia de Tecnología', 'Conferencia sobre las últimas tendencias en tecnología', '2025-07-15', '09:00:00', '17:00:00', 'confirmado', 1),
+('Reunión de Trabajo', 'Reunión mensual del equipo de desarrollo', '2025-07-10', '14:00:00', '16:00:00', 'pendiente', 2),
+('Celebración Aniversario', 'Celebración del 10° aniversario de la empresa', '2025-07-20', '18:00:00', '22:00:00', 'confirmado', 3);

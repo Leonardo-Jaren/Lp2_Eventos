@@ -1,7 +1,13 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['id'])) {
+    header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
+    exit();
+}
+
 $titulo_pagina = "Gestión de Reservas";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 // Incluir el modelo de reservas
 require_once '../Modelos/Reserva.php';
@@ -161,7 +167,6 @@ try {
                             <th class="px-4 py-3 text-left text-sm font-semibold">Hora</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold">Organizador</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold">Estado</th>
-                            <th class="px-4 py-3 text-left text-sm font-semibold">Recurso</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold">Acciones</th>
                         </tr>
                     </thead>
@@ -201,9 +206,9 @@ try {
                                             <?php echo ucfirst($reserva['estado']); ?>
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                    <!-- <td class="px-4 py-4 text-sm text-gray-900">
                                         <?php echo $reserva['tipo_recurso'] ? htmlspecialchars($reserva['tipo_recurso']) : 'Sin recurso'; ?>
-                                    </td>
+                                    </td> -->
                                     <td class="px-4 py-4">
                                         <div class="flex space-x-1">
                                             <a href="?ver_detalle=<?php echo $reserva['id']; ?>" 
@@ -283,7 +288,7 @@ try {
                         <p class="text-gray-700"><span class="font-medium">Fecha:</span> <?php echo date('d/m/Y', strtotime($evento_detalle['fecha_evento'])); ?></p>
                         <p class="text-gray-700"><span class="font-medium">Hora:</span> <?php echo date('H:i', strtotime($evento_detalle['hora_inicio'])); ?> - <?php echo date('H:i', strtotime($evento_detalle['hora_fin'])); ?></p>
                         <p class="text-gray-700"><span class="font-medium">Organizador:</span> <?php echo htmlspecialchars($evento_detalle['organizador']); ?></p>
-                        <p class="text-gray-700"><span class="font-medium">Recurso:</span> <?php echo htmlspecialchars($evento_detalle['tipo_recurso'] ?? '') ?: 'Sin recurso asignado'; ?></p>
+                        <!-- <p class="text-gray-700"><span class="font-medium">Recurso:</span> <?php echo htmlspecialchars($evento_detalle['tipo_recurso'] ?? '') ?: 'Sin recurso asignado'; ?></p> -->
                     </div>
                 </div>
             </div>
