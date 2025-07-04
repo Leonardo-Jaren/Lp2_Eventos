@@ -3,6 +3,7 @@ session_start();
 $titulo_pagina = "Editar Proveedor";
 include '../../layouts/header.php';
 require_once '../Modelos/Proveedor.php';
+require_once '../../Proveedores/Controlador/ProveedorController.php';
 
 $id = $_GET['id'] ?? null;
 $proveedor = null;
@@ -34,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($proveedor): ?>
                 <p class="mt-2">Estás editando el proveedor: <strong><?php echo htmlspecialchars($proveedor['nombre']); ?></strong></p>
             <form action="" method="POST" class="space-y-6">
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($proveedor['id_proveedor']); ?>">
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars($proveedor['id']); ?>">
                 <div class="space-y-4">
                     <div>
                         <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Proveedor</label>

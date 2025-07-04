@@ -17,7 +17,7 @@ class Proveedor {
     public function encontrarProveedor($id) {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sqlSelect = "SELECT * FROM proveedores WHERE id_proveedor = '$id'";
+        $sqlSelect = "SELECT * FROM proveedores WHERE id = '$id'";
         // CORRECCIÓN: Usar la conexión guardada en el objeto
         $stmt = $conexion->query($sqlSelect);
         $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -30,7 +30,7 @@ class Proveedor {
         $conexion = $conn->conectar();
         
         if ($id_excluir) {
-            $sqlSelect = "SELECT COUNT(*) FROM proveedores WHERE correo = '$correo' AND id_proveedor != '$id_excluir'";
+            $sqlSelect = "SELECT COUNT(*) FROM proveedores WHERE correo = '$correo' AND id != '$id_excluir'";
             $stmt = $conexion->query($sqlSelect);
         } else {
             $sqlSelect = "SELECT COUNT(*) FROM proveedores WHERE correo = '$correo'";
@@ -78,7 +78,7 @@ class Proveedor {
                           nombre = '$nombre', 
                           correo = '$correo', 
                           empresa = '$empresa' 
-                          WHERE id_proveedor = '$id'";
+                          WHERE id = '$id'";
             $resultado = $conexion->exec($sqlUpdate);
             $conn->desconectar();
             
@@ -95,7 +95,7 @@ class Proveedor {
     public static function eliminarProveedor($id) {
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
-        $sqlDelete = "DELETE FROM proveedores WHERE id_proveedor = '$id'";
+        $sqlDelete = "DELETE FROM proveedores WHERE id = '$id'";
         $resultado = $conexion->exec($sqlDelete);
         $conn->desconectar();
         return $resultado;
@@ -115,7 +115,7 @@ class Proveedor {
                 JOIN catalogo_servicios cs ON ep.id_servicio = cs.id_servicio
                 JOIN reservas r ON ep.id_reserva = r.id_reserva
                 JOIN usuarios u ON r.id_cliente = u.id_usuario
-                WHERE cs.id_proveedor = '$id_proveedor'
+                WHERE cs.id = '$id_proveedor'
                 ORDER BY r.fecha_evento DESC";
         $stmt = $conexion->query($sqlSelect);
         $proveedor_reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);

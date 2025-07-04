@@ -42,7 +42,7 @@ class ProveedorController {
         $resultado = $proveedor->eliminarProveedor($id);
         $id = $_GET['id'] ?? null;
         if ($resultado) {
-            header('Location: /Lp2_Eventos/Proveedores/Vistas/verProveedores.php');
+            header('Location: verProveedor.php');
             exit();
         } else {
             return "Error al eliminar el proveedor.";
