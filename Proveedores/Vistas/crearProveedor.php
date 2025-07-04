@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $proveedorController = new ProveedorController();
     $mensaje = $proveedorController->registrarProveedor($_POST);
 }
+
 ?>
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

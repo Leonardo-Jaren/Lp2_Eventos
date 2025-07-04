@@ -13,6 +13,8 @@ require_once '../Modelos/Proveedor.php';
 
 $proveedorModel = new Proveedor();
 $proveedores = $proveedorModel->obtenerTodosLosProveedores();
+$rol = $usuario['rol'] ?? 'Cliente';
+
 
 ?>
 
@@ -24,10 +26,12 @@ $proveedores = $proveedorModel->obtenerTodosLosProveedores();
                     <i class="fas fa-truck-loading mr-3"></i>
                     Gestión de Proveedores
                 </h1>
+                <?php if ($rol === 'Administrador'): ?>
                     <a href="crearProveedor.php" class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-100 font-medium transition-transform transform hover:scale-105">
                         <i class="fas fa-plus mr-2"></i>
                         Nuevo Proveedor
                     </a>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -77,9 +81,11 @@ $proveedores = $proveedorModel->obtenerTodosLosProveedores();
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay proveedores registrados</h3>
                     <p class="text-gray-500 mb-6 max-w-sm mx-auto">Comienza agregando tu primer proveedor para gestionar los servicios de eventos.</p>
+                    <?php if ($rol === 'Administrador'): ?>
                     <a href="crearProveedor.php" class="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                         <i class="fas fa-plus mr-2"></i>Crear Primer Proveedor
                     </a>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <!-- Grid de Cards -->
@@ -133,7 +139,7 @@ $proveedores = $proveedorModel->obtenerTodosLosProveedores();
                                            title="Ver Catálogo">
                                             <i class="fas fa-book-open text-xs"></i>
                                         </a>
-                                        
+                                        <?php if ($rol === 'Administrador'): ?>
                                         <a href="editarProveedor.php?id=<?php echo $proveedor['id']; ?>" 
                                            class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md" 
                                            title="Editar">
@@ -146,6 +152,7 @@ $proveedores = $proveedorModel->obtenerTodosLosProveedores();
                                            onclick="return confirm('¿Estás seguro de que deseas eliminar este proveedor?')">
                                             <i class="fas fa-trash text-xs"></i>
                                         </a>
+                                        <?php endif; ?>
                                     </div>
                                     
                                     <button class="text-gray-400 hover:text-gray-600 transition duration-200" title="Más opciones">

@@ -23,6 +23,8 @@ if ($id_proveedor) {
 
 $proveedor = new Proveedor();
 $proveedor->encontrarProveedor($id_proveedor);
+
+$rol = $_SESSION['rol'] ?? 'Cliente';
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -32,10 +34,12 @@ $proveedor->encontrarProveedor($id_proveedor);
             <i class="fas fa-book-open mr-3"></i>
             Catálogo de: <?php echo htmlspecialchars($proveedor->getNombreEmpresa($id_proveedor)); ?>
             </h1>
+            <?php if ($rol === 'Administrador'): ?>
             <a href="crearCatalogo.php?id=<?php echo urlencode($id_proveedor); ?>" 
                 class="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold py-2 px-4 rounded shadow inline-flex items-center">
             <i class="fas fa-plus mr-2"></i>Agregar Servicio
             </a>
+            <?php endif; ?>
         </div>
         <div class="p-6">
             <a href="verProveedor.php" class="text-blue-600 hover:text-blue-800 mb-6 inline-block"><i class="fas fa-arrow-left mr-2"></i>Volver a la lista</a>
@@ -46,7 +50,9 @@ $proveedor->encontrarProveedor($id_proveedor);
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">ID</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Nombre del servicio</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Precio Base</th>
+                            <?php if ($rol === 'Administrador'): ?>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Acciones</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -62,6 +68,7 @@ $proveedor->encontrarProveedor($id_proveedor);
                                     <td class="px-4 py-4 font-mono text-gray-900"><?php echo htmlspecialchars($servicio['id']); ?></td>
                                     <td class="px-4 py-4 font-medium text-gray-900"><?php echo htmlspecialchars($servicio['nombre_servicio']); ?></td>
                                     <td class="px-4 py-4 font-mono text-gray-900">S/ <?php echo number_format($servicio['precio'], 2); ?></td>
+                                    <?php if ($rol === 'Administrador' || $rol === 'Proveedor'): ?>
                                     <td class="px-4 py-4">
                                         <div class="flex space-x-2">
                                             <a href="editarCatalogo.php?id=<?php echo urlencode($servicio['id']); ?>&id_proveedor=<?php echo urlencode($id_proveedor); ?>" class="text-blue-600 hover:text-blue-800">
@@ -72,6 +79,7 @@ $proveedor->encontrarProveedor($id_proveedor);
                                             </a>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
