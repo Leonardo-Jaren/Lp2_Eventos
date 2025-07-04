@@ -7,7 +7,6 @@ class ProveedorController {
     public function registrarProveedor(array $datos) {
         $proveedor = new Proveedor();
         
-        // Limpiar y validar id_usuario
         $id_usuario = null;
         if (isset($datos['id_usuario']) && !empty(trim($datos['id_usuario']))) {
             $id_usuario = (int)$datos['id_usuario'];
@@ -31,7 +30,6 @@ class ProveedorController {
     public function editarProveedor(array $datos) {
         $proveedor = new Proveedor();
         
-        // Limpiar y validar id_usuario
         $id_usuario = null;
         if (isset($datos['id_usuario']) && !empty(trim($datos['id_usuario']))) {
             $id_usuario = (int)$datos['id_usuario'];

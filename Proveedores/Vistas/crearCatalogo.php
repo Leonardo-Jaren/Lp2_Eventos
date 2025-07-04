@@ -8,14 +8,11 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-// Obtener el ID del proveedor si viene de la URL
 $id_proveedor_seleccionado = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
-// Obtener proveedores para el select
 require_once '../Modelos/Proveedor.php';
 $proveedores = Proveedor::obtenerTodosLosProveedores();
 
-// Si viene un ID específico, obtener información del proveedor
 $proveedor_especifico = null;
 if ($id_proveedor_seleccionado) {
     $proveedorModel = new Proveedor();
@@ -29,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $mensaje = $catalogoServiciosController->registrarProveedor($_POST);
 }
 ?>
-<!-- Fondo con gradiente y decoración -->
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Tarjeta principal con diseño mejorado -->

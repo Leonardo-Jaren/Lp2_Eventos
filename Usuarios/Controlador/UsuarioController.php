@@ -6,42 +6,37 @@ class UsuarioController
 {
     public function registrarUsuario(array $datos)
     {
-        try {
-            // Validar datos requeridos
-            if (empty($datos['nombres']) || empty($datos['apellidos']) || empty($datos['correo']) || 
-                empty($datos['password']) || empty($datos['id_rol'])) {
+        
+        // Validar datos requeridos
+        if (empty($datos['nombres']) || empty($datos['apellidos']) || empty($datos['correo']) || 
+            empty($datos['password']) || empty($datos['id_rol'])) {
                 return "Todos los campos son obligatorios.";
-            }
+        }
             
-            // Validar formato de correo
-            if (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL)) {
-                return "El formato del correo electrónico no es válido.";
-            }
+        // Validar formato de correo
+        if (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL)) {
+            return "El formato del correo electrónico no es válido.";
+        }
             
-            // Validar longitud de contraseña
-            if (strlen($datos['password']) < 6) {
-                return "La contraseña debe tener al menos 6 caracteres.";
-            }
+        // Validar longitud de contraseña
+        if (strlen($datos['password']) < 6) {
+            return "La contraseña debe tener al menos 6 caracteres.";
+        }
             
-            $usuario = new Usuario();
-            $resultado = $usuario->registrarUsuario(
-                $datos['nombres'],
-                $datos['apellidos'],
-                $datos['correo'],
-                password_hash($datos['password'], PASSWORD_DEFAULT),
-                $datos['id_rol']
-            );
+        $usuario = new Usuario();
+        $resultado = $usuario->registrarUsuario(
+            $datos['nombres'],
+            $datos['apellidos'],
+            $datos['correo'],
+            password_hash($datos['password'], PASSWORD_DEFAULT),
+            $datos['id_rol']
+        );
             
-            if ($resultado) {
-                header("Location: ../../dashboard.php");
-                exit();
-            } else {
-                return "Error al registrar el usuario. Por favor, inténtelo de nuevo.";
-            }
-            
-        } catch (Exception $e) {
-            error_log("Error en registrarUsuario: " . $e->getMessage());
-            return "Error interno del servidor. Por favor, inténtelo más tarde.";
+        if ($resultado) {
+            header("Location: ../../dashboard.php");
+            exit();
+        } else {
+            return "Error al registrar el usuario. Por favor, inténtelo de nuevo.";
         }
     }
 

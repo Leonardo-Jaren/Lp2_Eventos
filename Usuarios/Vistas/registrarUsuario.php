@@ -5,12 +5,10 @@ require_once '../../layouts/header.php';
 $mensaje = '';
 $tipoMensaje = '';
 
-// Procesar el formulario si se envió
 if (!empty($_POST)) {
     require_once '../Controlador/UsuarioController.php';
     $usuarioController = new UsuarioController();
     
-    // Validar que el correo no exista ya
     require_once '../Modelos/Usuario.php';
     $usuarioModel = new Usuario();
     
@@ -23,7 +21,6 @@ if (!empty($_POST)) {
             $mensaje = $resultado;
             $tipoMensaje = 'error';
         }
-        // Si no hay error, se redirige en el controlador
     }
 }
 ?>

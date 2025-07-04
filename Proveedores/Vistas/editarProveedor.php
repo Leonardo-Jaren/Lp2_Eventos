@@ -6,7 +6,6 @@ require_once '../Modelos/Proveedor.php';
 require_once '../../Proveedores/Controlador/ProveedorController.php';
 require_once '../../Usuarios/Modelos/Usuario.php';
 
-// Obtener información del usuario actual y su rol
 $usuarioModel = new Usuario();
 $usuarioActual = $usuarioModel->obtenerUsuarioConRol($_SESSION['id']);
 $esAdministrador = ($usuarioActual['rol'] === 'Administrador');
@@ -18,7 +17,6 @@ if ($id) {
     $proveedor = $proveedorModel->encontrarProveedor($id);
 }
 
-// Si es administrador, obtener lista de usuarios
 $usuarios = [];
 if ($esAdministrador) {
     $usuarios = Proveedor::obtenerUsuariosDisponibles();

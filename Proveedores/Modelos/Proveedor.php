@@ -2,9 +2,7 @@
 
 require_once '../../conexion_db.php';
 
-class Proveedor
-{
-
+class Proveedor {
     public static function obtenerTodosLosProveedores()
     {
         $conn = new ConexionDB();
@@ -50,12 +48,10 @@ class Proveedor
             return ['success' => false, 'message' => 'El número de teléfono debe tener 9 dígitos.'];
         }
 
-        // Convertir cadena vacía a null para evitar errores de base de datos
         if ($id_usuario === '' || $id_usuario === '0') {
             $id_usuario = null;
         }
 
-        // Si no se proporciona id_usuario, usar el usuario de la sesión actual
         if ($id_usuario === null) {
             session_start();
             $id_usuario = $_SESSION['id'] ?? null;
@@ -64,22 +60,18 @@ class Proveedor
             }
         }
 
-        try {
-            $conn = new ConexionDB();
-            $conexion = $conn->conectar();
-            $sqlInsert = "INSERT INTO proveedores (nombre_empresa, telefono, direccion, id_usuario) 
-                          VALUES ('$nombre_empresa', '$telefono', '$direccion', '$id_usuario')";
-            $resultado = $conexion->exec($sqlInsert);
-            $conn->desconectar();
-
-            if ($resultado) {
-                return ['success' => true, 'message' => 'Proveedor registrado exitosamente.'];
-            } else {
-                return ['success' => false, 'message' => 'Error al registrar el proveedor.'];
-            }
-        } catch (PDOException $e) {
-            return ['success' => false, 'message' => 'Error en la base de datos: ' . $e->getMessage()];
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sqlInsert = "INSERT INTO proveedores (nombre_empresa, telefono, direccion, id_usuario) 
+                      VALUES ('$nombre_empresa', '$telefono', '$direccion', '$id_usuario')";
+        $resultado = $conexion->exec($sqlInsert);
+        $conn->desconectar();
+        if ($resultado) {
+            return ['success' => true, 'message' => 'Proveedor registrado exitosamente.'];
+        } else {
+            return ['success' => false, 'message' => 'Error al registrar el proveedor.'];
         }
+
     }
 
     public function actualizarProveedor($id, $nombre_empresa, $telefono, $direccion, $id_usuario = null)
@@ -88,41 +80,35 @@ class Proveedor
             return ['success' => false, 'message' => 'El número de teléfono debe tener 9 dígitos.'];
         }
 
-        // Convertir cadena vacía a null para evitar errores de base de datos
         if ($id_usuario === '' || $id_usuario === '0') {
             $id_usuario = null;
         }
 
-        try {
-            $conn = new ConexionDB();
-            $conexion = $conn->conectar();
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
 
-            // Si se proporciona id_usuario, incluirlo en la actualización
-            if ($id_usuario !== null) {
-                $sqlUpdate = "UPDATE proveedores SET 
-                              nombre_empresa = '$nombre_empresa', 
-                              telefono = '$telefono', 
-                              direccion = '$direccion',
-                              id_usuario = '$id_usuario'
-                              WHERE id = '$id'";
-            } else {
-                $sqlUpdate = "UPDATE proveedores SET 
-                              nombre_empresa = '$nombre_empresa', 
-                              telefono = '$telefono', 
-                              direccion = '$direccion' 
-                              WHERE id = '$id'";
-            }
+        if ($id_usuario !== null) {
+            $sqlUpdate = "UPDATE proveedores SET 
+                          nombre_empresa = '$nombre_empresa', 
+                          telefono = '$telefono', 
+                          direccion = '$direccion',
+                          id_usuario = '$id_usuario'
+                          WHERE id = '$id'";
+        } else {
+            $sqlUpdate = "UPDATE proveedores SET 
+                          nombre_empresa = '$nombre_empresa', 
+                          telefono = '$telefono', 
+                          direccion = '$direccion' 
+                          WHERE id = '$id'";
+        }
 
-            $resultado = $conexion->exec($sqlUpdate);
-            $conn->desconectar();
+        $resultado = $conexion->exec($sqlUpdate);
+        $conn->desconectar();
 
-            if ($resultado) {
-                return ['success' => true, 'message' => 'Proveedor actualizado exitosamente.'];
-            } else {
-                return ['success' => false, 'message' => 'Error al actualizar el proveedor.'];
-            }
-        } catch (PDOException $e) {
-            return ['success' => false, 'message' => 'Error en la base de datos: ' . $e->getMessage()];
+        if ($resultado) {
+            return ['success' => true, 'message' => 'Proveedor actualizado exitosamente.'];
+        } else {
+            return ['success' => false, 'message' => 'Error al actualizar el proveedor.'];
         }
     }
 
