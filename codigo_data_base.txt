@@ -132,3 +132,24 @@ INSERT INTO roles (nombre) VALUES
 ('Proveedor'),
 ('Organizador'),
 ('Administrador');
+
+-- 14. Inserción de usuarios de ejemplo
+-- IMPORTANTE: Ejecutar después de insertar los roles
+INSERT INTO usuarios (id_rol, nombres, apellidos, correo, password) VALUES
+(3, 'Juan Carlos', 'Pérez', 'juan.organizador@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+(1, 'María Elena', 'González', 'maria.cliente@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+(2, 'Carlos Alberto', 'Ramírez', 'carlos.proveedor@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+(4, 'Ana Sofía', 'Torres', 'ana.admin@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
+-- 15. Inserción de eventos de ejemplo (opcional)
+-- IMPORTANTE: Ejecutar después de insertar los usuarios
+INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_usuario, estado) VALUES
+('Reunión de Planificación', 'Reunión mensual del equipo de planificación', '2025-07-15', '09:00:00', '11:00:00', 1, 'pendiente'),
+('Conferencia Anual', 'Conferencia anual de la empresa', '2025-08-20', '08:00:00', '17:00:00', 1, 'confirmado'),
+('Workshop de Tecnología', 'Capacitación en nuevas tecnologías', '2025-07-25', '14:00:00', '18:00:00', 1, 'pendiente');
+
+-- NOTAS IMPORTANTES:
+-- 1. Ejecutar primero todas las sentencias CREATE TABLE
+-- 2. Luego ejecutar los INSERT en el orden especificado (roles -> usuarios -> eventos)
+-- 3. Si hay errores de foreign key, verificar que las tablas referenciadas tengan datos
+-- 4. El password usado es "password" encriptado con bcrypt (para pruebas)
