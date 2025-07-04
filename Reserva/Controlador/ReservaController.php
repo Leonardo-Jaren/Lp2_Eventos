@@ -11,7 +11,7 @@ class ReservaController{
             $datos["fecha_evento"],
             $datos["hora_inicio"],
             $datos["hora_fin"],
-            $datos["id_usuario"]
+            $datos["id_usuario"] ?? null // Este será el organizador, puede ser NULL
         );
         if($resultado != 0){
             header("Location: ../Vistas/verReservas.php");
@@ -23,7 +23,16 @@ class ReservaController{
 
     public function mostrar(){
         $reserva = new Reserva();
-        return $reserva->mostrar();
+        $resultado = $reserva->mostrar();
+        
+        // Convertir a array para facilitar el manejo en la vista
+        $reservas = [];
+        if ($resultado) {
+            while ($fila = $resultado->fetch()) {
+                $reservas[] = $fila;
+            }
+        }
+        return $reservas;
     }
 
     public function eliminar($id){
@@ -110,7 +119,16 @@ class ReservaController{
 
     public function obtenerConFiltros(array $filtros = []){
         $reserva = new Reserva();
-        return $reserva->obtenerReservasConFiltros($filtros);
+        $resultado = $reserva->obtenerReservasConFiltros($filtros);
+        
+        // Convertir a array para facilitar el manejo en la vista
+        $reservas = [];
+        if ($resultado) {
+            while ($fila = $resultado->fetch()) {
+                $reservas[] = $fila;
+            }
+        }
+        return $reservas;
     }
 
     public function obtenerCalendario($mes, $año, $id_usuario = null){

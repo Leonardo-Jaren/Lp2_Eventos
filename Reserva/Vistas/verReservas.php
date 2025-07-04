@@ -104,6 +104,9 @@ if (!empty($buscar)) {
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (!empty($reservas)): ?>
                             <?php foreach ($reservas as $reserva): ?>
+                                <?php
+                                // Debug removido
+                                ?>
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -137,13 +140,25 @@ if (!empty($buscar)) {
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
                                             <i class="fas fa-user mr-1"></i>
-                                            <?php echo htmlspecialchars($reserva['nombre_cliente'] ?? 'Sin asignar'); ?>
+                                            <?php 
+                                            if (!empty($reserva['cliente_nombres']) && !empty($reserva['cliente_apellidos'])) {
+                                                echo htmlspecialchars($reserva['cliente_nombres'] . ' ' . $reserva['cliente_apellidos']);
+                                            } else {
+                                                echo 'Sin asignar';
+                                            }
+                                            ?>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
                                             <i class="fas fa-user-tie mr-1"></i>
-                                            <?php echo htmlspecialchars($reserva['nombre_organizador'] ?? 'Sin asignar'); ?>
+                                            <?php 
+                                            if (!empty($reserva['organizador'])) {
+                                                echo htmlspecialchars($reserva['organizador']);
+                                            } else {
+                                                echo 'Sin asignar';
+                                            }
+                                            ?>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
