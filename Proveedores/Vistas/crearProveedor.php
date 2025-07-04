@@ -7,12 +7,27 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
+// Obtener información del usuario actual y su rol
+require_once '../../Usuarios/Modelos/Usuario.php';
+require_once '../Modelos/Proveedor.php';
+
+$usuarioModel = new Usuario();
+$usuarioActual = $usuarioModel->obtenerUsuarioConRol($_SESSION['id']);
+$esAdministrador = ($usuarioActual['rol'] === 'Administrador');
+
+// Si es administrador, obtener lista de usuarios
+$usuarios = [];
+if ($esAdministrador) {
+    $usuarios = Proveedor::obtenerUsuariosDisponibles();
+}
+
 $mensaje = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     require_once '../Controlador/ProveedorController.php';
     $proveedorController = new ProveedorController();
     $mensaje = $proveedorController->registrarProveedor($_POST);
 }
+
 ?>
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -36,16 +51,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <form action="crearProveedor.php" method="post">
                 <div class="space-y-4">
                     <div>
-                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Proveedor</label>
-                        <input type="text" name="nombre" id="nombre" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        <label for="nombre_empresa" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Empresa</label>
+                        <input type="text" name="nombre_empresa" id="nombre_empresa" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                     </div>
                     <div>
-                        <label for="correo" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                        <input type="email" name="correo" id="correo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                        <input type="text" name="telefono" id="telefono" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                     </div>
                     <div>
-                        <label for="empresa" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
-                        <input type="text" name="empresa" id="empresa" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                        <input type="text" name="direccion" id="direccion" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    
+                    <!-- Campo de Usuario -->
+                    <div>
+                        <label for="id_usuario" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-user mr-2"></i>Usuario Asignado
+                        </label>
+                        <?php if ($esAdministrador): ?>
+                            <!-- Select para administrador -->
+                            <select name="id_usuario" id="id_usuario" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="<?php echo $usuarioActual['id']; ?>" selected>
+                                    <?php echo htmlspecialchars($usuarioActual['nombres'] . ' ' . $usuarioActual['apellidos'] . ' (Usar mi usuario)'); ?>
+                                </option>
+                                <?php foreach ($usuarios as $usuario): ?>
+                                    <?php if ($usuario['id'] != $usuarioActual['id']): ?>
+                                        <option value="<?php echo $usuario['id']; ?>">
+                                            <?php echo htmlspecialchars($usuario['nombre_completo'] . ' (' . $usuario['rol'] . ')'); ?>
+                                        </option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Como administrador, puedes asignar este proveedor a cualquier usuario</p>
+                        <?php else: ?>
+                            <!-- Campo de solo lectura para usuarios normales -->
+                            <div class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 flex items-center">
+                                <i class="fas fa-user-check text-blue-500 mr-2"></i>
+                                <span class="text-gray-700"><?php echo htmlspecialchars($usuarioActual['nombres'] . ' ' . $usuarioActual['apellidos'] . ' (' . $usuarioActual['rol'] . ')'); ?></span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-4">

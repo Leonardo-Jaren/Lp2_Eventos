@@ -1,16 +1,23 @@
 <?php
 
-// Incluir los modelos necesarios
 require_once '../Modelos/Proveedor.php';
 require_once '../Modelos/CatalogoServicios.php';
 
 class ProveedorController {
     public function registrarProveedor(array $datos) {
         $proveedor = new Proveedor();
+        
+        // Limpiar y validar id_usuario
+        $id_usuario = null;
+        if (isset($datos['id_usuario']) && !empty(trim($datos['id_usuario']))) {
+            $id_usuario = (int)$datos['id_usuario'];
+        }
+        
         $resultado = $proveedor->guardarProveedor(
-            $datos['nombre'],
-            $datos['correo'],
-            $datos['empresa']
+            $datos['nombre_empresa'],
+            $datos['telefono'],
+            $datos['direccion'],
+            $id_usuario
         );
         
         if ($resultado['success']) {
@@ -23,11 +30,19 @@ class ProveedorController {
 
     public function editarProveedor(array $datos) {
         $proveedor = new Proveedor();
+        
+        // Limpiar y validar id_usuario
+        $id_usuario = null;
+        if (isset($datos['id_usuario']) && !empty(trim($datos['id_usuario']))) {
+            $id_usuario = (int)$datos['id_usuario'];
+        }
+        
         $resultado = $proveedor->actualizarProveedor(
             $datos['id'],
-            $datos['nombre'],
-            $datos['correo'],
-            $datos['empresa']
+            $datos['nombre_empresa'],
+            $datos['telefono'],
+            $datos['direccion'],
+            $id_usuario
         );
         
         if ($resultado['success']) {
@@ -43,7 +58,7 @@ class ProveedorController {
         $resultado = $proveedor->eliminarProveedor($id);
         $id = $_GET['id'] ?? null;
         if ($resultado) {
-            header('Location: /Lp2_Eventos/Proveedores/Vistas/verProveedores.php');
+            header('Location: verProveedor.php');
             exit();
         } else {
             return "Error al eliminar el proveedor.";

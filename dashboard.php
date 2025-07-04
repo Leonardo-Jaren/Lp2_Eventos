@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_SESSION['id'])) {
     header("Location: Autenticación/Vista/login.php");
     exit();
@@ -11,7 +10,6 @@ require_once 'conexion_db.php';
 $conexion = new ConexionDB();
 $conn = $conexion->conectar();
 
-// Verificar que el usuario existe y obtener sus datos
 $sqlUser = "SELECT u.nombres, u.correo, r.nombre as rol FROM usuarios u 
             LEFT JOIN roles r ON u.id_rol = r.id 
             WHERE u.id = ?";
@@ -19,9 +17,9 @@ $stmt = $conn->prepare($sqlUser);
 $stmt->execute([$_SESSION['id']]);
 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Verificar si se encontró el usuario
+$rol = $usuario['rol'] ?? 'Cliente';
+
 if (!$usuario) {
-    // Si no se encuentra el usuario, destruir la sesión y redirigir
     session_destroy();
     header("Location: Autenticación/Vista/login.php");
     exit();
@@ -82,6 +80,7 @@ require_once 'nav.php';
 
         <!-- Tarjetas de Navegación -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <?php if ($rol === 'Administrador'): ?>
             <!-- Usuarios -->
             <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
                 <div class="flex items-center">
@@ -99,6 +98,7 @@ require_once 'nav.php';
                     <a href="Usuarios/Vistas/verUsuarios.php" class="text-blue-600 hover:text-blue-800">Ver todos →</a>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Reservas -->
             <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
@@ -149,34 +149,19 @@ require_once 'nav.php';
                 $result = $conn->query("SELECT COUNT(*) as total FROM usuarios");
                 $stats['usuarios'] = $result->fetch()['total'];
 
-                // Total reservas
-                $result = $conn->query("SELECT COUNT(*) as total FROM reservas");
-                $stats['reservas'] = $result->fetch()['total'] ?? 0;
-
                 // Total proveedores
                 $result = $conn->query("SELECT COUNT(*) as total FROM proveedores");
                 $stats['proveedores'] = $result->fetch()['total'] ?? 0;
-
-                // Total recursos
-                $result = $conn->query("SELECT COUNT(*) as total FROM recursos");
-                $stats['recursos'] = $result->fetch()['total'] ?? 0;
                 ?>
 
                 <div class="text-center">
                     <div class="text-3xl font-bold text-blue-600"><?php echo $stats['usuarios']; ?></div>
                     <div class="text-sm text-gray-600">Usuarios</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-green-600"><?php echo $stats['reservas']; ?></div>
-                    <div class="text-sm text-gray-600">Reservas</div>
-                </div>
+                
                 <div class="text-center">
                     <div class="text-3xl font-bold text-purple-600"><?php echo $stats['proveedores']; ?></div>
                     <div class="text-sm text-gray-600">Proveedores</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-orange-600"><?php echo $stats['recursos']; ?></div>
-                    <div class="text-sm text-gray-600">Recursos</div>
                 </div>
             </div>
         </div>

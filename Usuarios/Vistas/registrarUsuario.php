@@ -24,18 +24,21 @@ if (!empty($_POST)) {
             <div>
                 <label class="block text-sm font-medium text-gray-700">Nombres</label>
                 <input type="text" name="nombres" placeholder="Nombres" required
+                    value="<?php echo isset($_POST['nombres']) ? htmlspecialchars($_POST['nombres']) : ''; ?>"
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Apellidos</label>
                 <input type="text" name="apellidos" placeholder="Apellidos" required
+                    value="<?php echo isset($_POST['apellidos']) ? htmlspecialchars($_POST['apellidos']) : ''; ?>"
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Correo</label>
                 <input type="email" name="correo" placeholder="Correo" required
+                    value="<?php echo isset($_POST['correo']) ? htmlspecialchars($_POST['correo']) : ''; ?>"
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -52,12 +55,21 @@ if (!empty($_POST)) {
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">Seleccione un rol</option>
                     <?php
-                    $conexion = new ConexionDB();
-                    $conn = $conexion->conectar();
-                    $sqlSelect = "SELECT id, nombre FROM roles";
-                    $result = $conn->query($sqlSelect);
-                    foreach ($result as $row) {
-                        echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['nombre']) . '</option>';
+                    try {
+                        $conexion = new ConexionDB();
+                        $conn = $conexion->conectar();
+                        if ($conn) {
+                            $sqlSelect = "SELECT id, nombre FROM roles";
+                            $result = $conn->query($sqlSelect);
+                            $selectedRol = isset($_POST['id_rol']) ? $_POST['id_rol'] : '';
+                            foreach ($result as $row) {
+                                $selected = ($selectedRol == $row['id']) ? 'selected' : '';
+                                echo '<option value="' . htmlspecialchars($row['id']) . '" ' . $selected . '>' . htmlspecialchars($row['nombre']) . '</option>';
+                            }
+                            $conexion->desconectar();
+                        }
+                    } catch (Exception $e) {
+                        echo '<option value="" disabled>Error al cargar roles</option>';
                     }
                     ?>
                 </select>

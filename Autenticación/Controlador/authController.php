@@ -15,7 +15,7 @@ class AuthController {
         foreach ($resultado as $userLogin) {
             $correos = $userLogin['correo'];
             $id = $userLogin['id'];
-            $nombre = $userLogin['nombre']; // Asegúrate de que 'nombre' esté en el resultado
+            $nombre = $userLogin['nombres']; // Asegúrate de que 'nombres' esté en el resultado
             $passwordBD = $userLogin['password'];
             $contador++;
         }
@@ -24,7 +24,7 @@ class AuthController {
                 session_start();
                 $_SESSION['id'] = $id;
                 $_SESSION['correo'] = $correos;
-                $_SESSION['nombre'] = $nombre;
+                $_SESSION['nombres'] = $nombre;
                 header("Location: ../../dashboard.php");
                 return "Bienvenido, " . htmlspecialchars($nombre);
             } else {
