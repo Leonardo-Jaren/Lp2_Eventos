@@ -6,6 +6,23 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
+// Procesamiento del formulario de cancelación
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_evento'])) {
+    require_once '../Controlador/ReservaController.php';
+    
+    $reservaController = new ReservaController();
+    $id_evento = $_POST['id_evento'];
+    $motivo = $_POST['motivo_cancelacion'] ?? '';
+    
+    if ($id_evento) {
+        $resultado = $reservaController->eliminar($id_evento);
+        // El controlador ya maneja la redirección
+    } else {
+        $_SESSION['mensaje'] = 'ID de evento no válido';
+        $_SESSION['tipo_mensaje'] = 'error';
+    }
+}
+
 $titulo_pagina = "Cancelar Reserva";
 require_once '../../nav.php';
 
@@ -105,7 +122,7 @@ $dias_anticipacion = $hoy->diff($fecha_evento)->days;
             </div>
 
             <!-- Formulario de cancelación -->
-            <form method="POST" action="../Controlador/ReservaController.php?accion=cancelar" class="space-y-6">
+            <form method="POST" action="" class="space-y-6">
                 <input type="hidden" name="id_evento" value="<?php echo $evento['id']; ?>">
                 
                 <div>

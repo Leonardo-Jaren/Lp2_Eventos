@@ -6,6 +6,30 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
+// Procesamiento del formulario de edición
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_evento'])) {
+    require_once '../Controlador/ReservaController.php';
+    
+    $reservaController = new ReservaController();
+    $datos = [
+        'id' => $_POST['id_evento'],
+        'titulo' => $_POST['titulo'],
+        'descripcion' => $_POST['descripcion'],
+        'fecha_evento' => $_POST['fecha_evento'],
+        'hora_inicio' => $_POST['hora_inicio'],
+        'hora_fin' => $_POST['hora_fin'],
+        'id_usuario' => $_SESSION['id']
+    ];
+    
+    if ($datos['id'] && $datos['titulo'] && $datos['fecha_evento'] && $datos['hora_inicio'] && $datos['hora_fin']) {
+        $resultado = $reservaController->actualizar($datos);
+        // El controlador ya maneja la redirección
+    } else {
+        $_SESSION['mensaje'] = 'Todos los campos son obligatorios';
+        $_SESSION['tipo_mensaje'] = 'error';
+    }
+}
+
 $titulo_pagina = "Editar Reserva";
 require_once '../../nav.php';
 
@@ -120,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             </div>
 
-            <form method="POST" action="../Controlador/ReservaController.php?accion=editar">
+            <form method="POST" action="">
                 <input type="hidden" name="id_evento" value="<?php echo $evento['id']; ?>">
                 
                 <div class="grid grid-cols-1 gap-6">
@@ -221,10 +245,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <i class="fas fa-arrow-left mr-2"></i>
                             Cancelar
                         </a>
-                        <a href="cambiarFechaReserva.php?id=<?php echo $evento['id']; ?>" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors duration-200 text-center flex items-center justify-center">
+                        <!-- <a href="cambiarFechaReserva.php?id=<?php echo $evento['id']; ?>" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors duration-200 text-center flex items-center justify-center">
                             <i class="fas fa-calendar-alt mr-2"></i>
                             Solo Cambiar Fecha
-                        </a>
+                        </a> -->
                     </div>
                 </div>
             </form>

@@ -1,168 +1,103 @@
-create database lp2_eventos;
-use lp2_eventos;
+-- Base de datos LP2 Eventos - Versión refactorizada sin bucles
+CREATE DATABASE lp2_eventos02;
+USE lp2_eventos02;
 
 -- 1. Tabla de roles
 CREATE TABLE roles (
-id INT AUTO_INCREMENT PRIMARY KEY,
-nombre VARCHAR(50) UNIQUE NOT NULL
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL
 );
 
--- 2. Tabla de usuarios
+-- 2. Tabla de usuarios (tabla principal sin dependencias)
 CREATE TABLE usuarios (
-id INT AUTO_INCREMENT PRIMARY KEY,
-nombres VARCHAR(100) NOT NULL,
-apellidos varchar(100) not null,
-correo VARCHAR(100) UNIQUE NOT NULL,
-password VARCHAR(255) NOT NULL,
-id_rol INT,
-FOREIGN KEY (id_rol) REFERENCES roles(id)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    id_rol INT NOT NULL,
+    FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
--- 3. Tabla para permisos
-CREATE TABLE permisos (
-id int auto_increment primary key,
-nombre_permiso varchar(100),
-descripcion text
-);
-
--- 4. Tabla rol_permiso
-CREATE TABLE rol_permiso (
-rol_id INT,
-permiso_id INT,
-foreign key (rol_id) references roles(id),
-FOREIGN KEY (permiso_id) REFERENCES permisos(id)
-);
-
--- 5. Tabla de eventos (principal para reservas)
-CREATE TABLE eventos (
-id INT AUTO_INCREMENT PRIMARY KEY,
-titulo VARCHAR(100) NOT NULL,
-descripcion TEXT,
-fecha_evento DATE NOT NULL,
-hora_inicio TIME,
-hora_fin TIME,
-estado ENUM('pendiente', 'confirmado', 'cancelado') DEFAULT 'pendiente',
-id_usuario INT,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- 6. Tabla de recursos
-CREATE TABLE recursos (
-id INT AUTO_INCREMENT PRIMARY KEY,
-tipo VARCHAR(50) NOT NULL,
-descripcion TEXT,
-disponible BOOLEAN DEFAULT TRUE
-);
-
--- 7. Tabla de reservas (para recursos específicos)
-CREATE TABLE reservas (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_evento INT,
-fecha DATE NOT NULL,
-hora_inicio TIME,
-hora_fin TIME,
-id_recurso INT,
-estado ENUM('reservado', 'cancelado') DEFAULT 'reservado',
-FOREIGN KEY (id_evento) REFERENCES eventos(id),
-FOREIGN KEY (id_recurso) REFERENCES recursos(id)
-);
-
--- 8. Tabla de proveedores
+-- 3. Tabla de proveedores (eliminando referencia circular)
 CREATE TABLE proveedores (
-id INT AUTO_INCREMENT PRIMARY KEY,
-nombre VARCHAR(100) NOT NULL,
-correo VARCHAR(100) UNIQUE NOT NULL,
-empresa VARCHAR(100),
-id_usuario INT,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT UNIQUE NOT NULL,
+    nombre_empresa VARCHAR(100),
+    telefono VARCHAR(20),
+    direccion TEXT,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
--- 9. Tabla de servicios_proveedor
-CREATE TABLE servicios_proveedor (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_proveedor INT,
-nombre_servicio VARCHAR(100),
-precio DECIMAL(10,2),
-FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+-- 4. Tabla de servicios (separada de proveedores para mejor normalización)
+CREATE TABLE servicios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_proveedor INT NOT NULL,
+    nombre_servicio VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id) ON DELETE CASCADE
 );
 
--- 10. Tabla de contratos
-CREATE TABLE contratos (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_proveedor INT,
-fecha_inicio DATE NOT NULL,
-fecha_fin DATE,
-archivo_pdf VARCHAR(255),
-estado ENUM('activo', 'finalizado') DEFAULT 'activo',
-FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+-- 5. Tabla de eventos
+CREATE TABLE eventos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    fecha_evento DATE NOT NULL,
+    hora_inicio TIME,
+    hora_fin TIME,
+    ubicacion VARCHAR(255),
+    presupuesto_estimado DECIMAL(10,2),
+    estado ENUM('borrador', 'planificacion', 'confirmado', 'en_proceso', 'finalizado', 'cancelado') DEFAULT 'borrador',
+    id_cliente INT NOT NULL,
+    id_organizador INT,
+    FOREIGN KEY (id_cliente) REFERENCES usuarios(id),
+    FOREIGN KEY (id_organizador) REFERENCES usuarios(id)
 );
 
--- 11. Tabla de evento_proveedores
-CREATE TABLE evento_proveedores (
+-- 6. Tabla de solicitudes de servicio
+-- 6. Tabla de solicitudes de servicio
+CREATE TABLE solicitudes_servicio (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_evento INT NOT NULL,
     id_servicio INT NOT NULL,
-    id_proveedor INT NOT NULL,
-    estado_participacion ENUM('pendiente', 'confirmado', 'rechazado') DEFAULT 'pendiente',
-    fecha_participacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_evento) REFERENCES eventos(id),
-    FOREIGN KEY (id_servicio) REFERENCES servicios_proveedor(id),
-    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+    precio_acordado DECIMAL(10,2),
+    fecha_requerida DATE,
+    hora_inicio TIME,
+    hora_fin TIME,
+    estado ENUM('solicitado', 'en_revision', 'aceptado', 'rechazado', 'cancelado') DEFAULT 'solicitado',
+    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_respuesta DATETIME,
+    FOREIGN KEY (id_evento) REFERENCES eventos(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_servicio) REFERENCES servicios(id) ON DELETE CASCADE
 );
 
--- 12. Tabla de quejas
-CREATE TABLE quejas (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_usuario INT,
-descripcion TEXT,
-fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+-- 7. Tabla de contratos
+CREATE TABLE contratos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_solicitud INT UNIQUE NOT NULL,
+    numero_contrato VARCHAR(50) UNIQUE,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE,
+    monto_total DECIMAL(10,2) NOT NULL,
+    estado ENUM('borrador', 'activo', 'finalizado', 'cancelado') DEFAULT 'borrador',
+    FOREIGN KEY (id_solicitud) REFERENCES solicitudes_servicio(id) ON DELETE CASCADE
 );
 
--- 13. Tabla de notificaciones
-CREATE TABLE notificaciones (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_usuario INT,
-mensaje TEXT NOT NULL,
-leido BOOLEAN DEFAULT FALSE,
-fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- 14. Tabla de reportes
-CREATE TABLE reportes (
-id INT AUTO_INCREMENT PRIMARY KEY,
-tipo VARCHAR(50),
-id_usuario INT,
-fecha_generado DATETIME DEFAULT CURRENT_TIMESTAMP,
-archivo_pdf VARCHAR(255),
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- 15. Inserción de roles base
+-- 10. Inserción de roles base
 INSERT INTO roles (nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),
 ('Administrador');
 
--- 16. Inserción de usuarios de prueba
-INSERT INTO usuarios (nombres, apellidos, correo, password, id_rol) VALUES
-('Juan', 'Pérez', 'juan.perez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1),
-('María', 'González', 'maria.gonzalez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2),
-('Carlos', 'Rodríguez', 'carlos.rodriguez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3),
-('Ana', 'Martínez', 'ana.martinez@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 4);
-
--- 17. Inserción de recursos de ejemplo
-INSERT INTO recursos (tipo, descripcion, disponible) VALUES
-('Salón', 'Salón de eventos principal con capacidad para 100 personas', TRUE),
-('Audio', 'Sistema de sonido profesional', TRUE),
-('Proyector', 'Proyector HD para presentaciones', TRUE),
-('Catering', 'Servicio de alimentación', TRUE),
-('Decoración', 'Elementos decorativos para eventos', TRUE);
-
--- 18. Inserción de eventos de ejemplo
-INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, estado, id_usuario) VALUES
-('Conferencia de Tecnología', 'Conferencia sobre las últimas tendencias en tecnología', '2025-07-15', '09:00:00', '17:00:00', 'confirmado', 1),
-('Reunión de Trabajo', 'Reunión mensual del equipo de desarrollo', '2025-07-10', '14:00:00', '16:00:00', 'pendiente', 2),
-('Celebración Aniversario', 'Celebración del 10° aniversario de la empresa', '2025-07-20', '18:00:00', '22:00:00', 'confirmado', 3);
+-- 11. Índices para optimizar consultas
+CREATE INDEX idx_usuarios_correo ON usuarios(correo);
+CREATE INDEX idx_usuarios_rol ON usuarios(id_rol);
+CREATE INDEX idx_eventos_fecha ON eventos(fecha_evento);
+CREATE INDEX idx_eventos_cliente ON eventos(id_cliente);
+CREATE INDEX idx_servicios_proveedor ON servicios(id_proveedor);
+CREATE INDEX idx_solicitudes_evento ON solicitudes_servicio(id_evento);
+CREATE INDEX idx_solicitudes_servicio ON solicitudes_servicio(id_servicio);
+CREATE INDEX idx_contratos_solicitud ON contratos(id_solicitud);
