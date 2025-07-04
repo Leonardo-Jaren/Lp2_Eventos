@@ -149,34 +149,19 @@ require_once 'nav.php';
                 $result = $conn->query("SELECT COUNT(*) as total FROM usuarios");
                 $stats['usuarios'] = $result->fetch()['total'];
 
-                // Total reservas
-                $result = $conn->query("SELECT COUNT(*) as total FROM reservas");
-                $stats['reservas'] = $result->fetch()['total'] ?? 0;
-
                 // Total proveedores
                 $result = $conn->query("SELECT COUNT(*) as total FROM proveedores");
                 $stats['proveedores'] = $result->fetch()['total'] ?? 0;
-
-                // Total recursos
-                $result = $conn->query("SELECT COUNT(*) as total FROM recursos");
-                $stats['recursos'] = $result->fetch()['total'] ?? 0;
                 ?>
 
                 <div class="text-center">
                     <div class="text-3xl font-bold text-blue-600"><?php echo $stats['usuarios']; ?></div>
                     <div class="text-sm text-gray-600">Usuarios</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-green-600"><?php echo $stats['reservas']; ?></div>
-                    <div class="text-sm text-gray-600">Reservas</div>
-                </div>
+                
                 <div class="text-center">
                     <div class="text-3xl font-bold text-purple-600"><?php echo $stats['proveedores']; ?></div>
                     <div class="text-sm text-gray-600">Proveedores</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-orange-600"><?php echo $stats['recursos']; ?></div>
-                    <div class="text-sm text-gray-600">Recursos</div>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@ class ConexionDB {
     private $conexion;
 
     public function __construct() {
-        $this->dns = "mysql:host=localhost;dbname=lp2_eventos";
+        $this->dns = "mysql:host=localhost;dbname=lp2_eventos02";
         $this->usuario = "root";
         $this->contrasena = "";
     }

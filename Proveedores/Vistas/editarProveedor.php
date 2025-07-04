@@ -4,12 +4,24 @@ $titulo_pagina = "Editar Proveedor";
 include '../../layouts/header.php';
 require_once '../Modelos/Proveedor.php';
 require_once '../../Proveedores/Controlador/ProveedorController.php';
+require_once '../../Usuarios/Modelos/Usuario.php';
+
+// Obtener información del usuario actual y su rol
+$usuarioModel = new Usuario();
+$usuarioActual = $usuarioModel->obtenerUsuarioConRol($_SESSION['id']);
+$esAdministrador = ($usuarioActual['rol'] === 'Administrador');
 
 $id = $_GET['id'] ?? null;
 $proveedor = null;
 if ($id) {
     $proveedorModel = new Proveedor();
     $proveedor = $proveedorModel->encontrarProveedor($id);
+}
+
+// Si es administrador, obtener lista de usuarios
+$usuarios = [];
+if ($esAdministrador) {
+    $usuarios = Proveedor::obtenerUsuariosDisponibles();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,39 +38,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="bg-yellow-500 text-white px-6 py-4">
-             <h1 class="text-2xl font-bold flex items-center">
+            <h1 class="text-2xl font-bold flex items-center">
                 <i class="fas fa-edit mr-3"></i>
                 Editar Proveedor
             </h1>
         </div>
         <div class="p-6">
             <?php if ($proveedor): ?>
-                <p class="mt-2">Estás editando el proveedor: <strong><?php echo htmlspecialchars($proveedor['nombre']); ?></strong></p>
-            <form action="" method="POST" class="space-y-6">
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($proveedor['id']); ?>">
-                <div class="space-y-4">
-                    <div>
-                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Proveedor</label>
-                        <input type="text" name="nombre" id="nombre" value="<?php echo htmlspecialchars($proveedor['nombre']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                <p class="mt-2">Estás editando el proveedor: <strong><?php echo htmlspecialchars($proveedor['nombre_empresa']); ?></strong></p>
+                <form action="" method="POST" class="space-y-6">
+                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($proveedor['id']); ?>">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="nombre_empresa" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Empresa</label>
+                            <input type="text" name="nombre_empresa" id="nombre_empresa" value="<?php echo htmlspecialchars($proveedor['nombre_empresa']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        </div>
+                        <div>
+                            <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="text" name="telefono" id="telefono" value="<?php echo htmlspecialchars($proveedor['telefono']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        </div>
+                        <div>
+                            <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                            <input type="text" name="direccion" id="direccion" value="<?php echo htmlspecialchars($proveedor['direccion']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        </div>
+
+                        <!-- Campo de Usuario -->
+                        <div>
+                            <label for="id_usuario" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-user mr-2"></i>Usuario Asignado
+                            </label>
+                            <?php if ($esAdministrador): ?>
+                                <!-- Select para administrador -->
+                                <select name="id_usuario" id="id_usuario" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                                    <?php foreach ($usuarios as $usuario): ?>
+                                        <option value="<?php echo $usuario['id']; ?>"
+                                            <?php echo ($proveedor['id_usuario'] == $usuario['id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($usuario['nombre_completo'] . ' (' . $usuario['rol'] . ')'); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Como administrador, puedes reasignar este proveedor a otro usuario</p>
+                            <?php else: ?>
+                                <!-- Campo de solo lectura para usuarios normales -->
+                                <div class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 flex items-center">
+                                    <i class="fas fa-user-check text-yellow-500 mr-2"></i>
+                                    <span class="text-gray-700">
+                                        <?php echo htmlspecialchars($proveedor['nombre_usuario'] ?? 'Usuario no asignado'); ?>
+                                    </span>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Solo los administradores pueden cambiar la asignación de usuario</p>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div>
-                        <label for="correo" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                        <input type="email" name="correo" id="correo" value="<?php echo htmlspecialchars($proveedor['correo']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <a href="verProveedor.php" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+                            <i class="fas fa-times mr-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-200">
+                            <i class="fas fa-save mr-2"></i>Actualizar Proveedor
+                        </button>
                     </div>
-                    <div>
-                        <label for="empresa" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
-                        <input type="text" name="empresa" id="empresa" value="<?php echo htmlspecialchars($proveedor['empresa']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end space-x-4">
-                    <a href="verProveedor.php" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
-                        <i class="fas fa-times mr-2"></i>Cancelar
-                    </a>
-                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-200">
-                        <i class="fas fa-save mr-2"></i>Actualizar Proveedor
-                    </button>
-                </div>
-            </form>
+                </form>
             <?php else: ?>
                 <div class="text-center text-red-500">
                     <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>

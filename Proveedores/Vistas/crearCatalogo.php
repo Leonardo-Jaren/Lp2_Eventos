@@ -47,14 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div>
                             <div class="text-3xl font-bold">
                                 <?php if ($proveedor_especifico): ?>
-                                    Agregar Servicio para <?php echo htmlspecialchars($proveedor_especifico['nombre']); ?>
+                                    Agregar Servicio para <?php echo htmlspecialchars($proveedor_especifico['nombre_empresa']); ?>
                                 <?php else: ?>
                                     Crear Nuevo Servicio
                                 <?php endif; ?>
                             </div>
                             <div class="text-blue-100 text-sm font-normal mt-1">
                                 <?php if ($proveedor_especifico): ?>
-                                    Añade un nuevo servicio al catálogo de <?php echo htmlspecialchars($proveedor_especifico['empresa'] ?? $proveedor_especifico['nombre']); ?>
+                                    Añade un nuevo servicio al catálogo de <?php echo htmlspecialchars($proveedor_especifico['empresa'] ?? $proveedor_especifico['nombre_empresa']); ?>
                                 <?php else: ?>
                                     Añade un nuevo servicio al catálogo
                                 <?php endif; ?>
@@ -87,12 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="space-y-6">
                             <!-- Nombre del servicio -->
                             <div class="group">
-                                <label for="nombre" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                <label for="nombre_servicio" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
                                     <i class="fas fa-tag text-blue-500 mr-2"></i>
                                     Nombre del Servicio
                                 </label>
                                 <div class="relative">
-                                    <input type="text" name="nombre_servicio" id="nombre" 
+                                    <input type="text" name="nombre_servicio" id="nombre_servicio" 
                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
                                            placeholder="Ej: Catering premium, Decoración floral..." required>
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     Precio Base
                                 </label>
                                 <div class="relative">
-                                    <input type="number" name="precio_base" id="precio" step="0.01" min="0"
+                                    <input type="number" name="precio" id="precio" step="0.01" min="0"
                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white pl-10" 
                                            placeholder="0.00" required>
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -116,6 +116,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     </div>
                                 </div>
                                 <p class="mt-2 text-xs text-gray-500">Ingresa el precio base del servicio</p>
+                            </div>
+
+                            <!-- Descripción -->
+                            <div class="group">
+                                <label for="descripcion" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-align-left text-blue-500 mr-2"></i>
+                                    Descripción del Servicio
+                                </label>
+                                <div class="relative">
+                                    <textarea name="descripcion" id="descripcion" rows="4"
+                                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none" 
+                                              placeholder="Describe detalladamente el servicio que ofreces..."></textarea>
+                                    <div class="absolute top-3 right-3 pointer-events-none">
+                                        <i class="fas fa-comment text-gray-400"></i>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Máximo 500 caracteres (opcional)</p>
                             </div>
                         </div>
 
@@ -137,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                     <i class="fas fa-building text-blue-600 text-sm"></i>
                                                 </div>
                                                 <div>
-                                                    <div class="font-semibold text-gray-800"><?php echo htmlspecialchars($proveedor_especifico['nombre']); ?></div>
+                                                    <div class="font-semibold text-gray-800"><?php echo htmlspecialchars($proveedor_especifico['nombre_empresa']); ?></div>
                                                     <?php if (!empty($proveedor_especifico['empresa'])): ?>
                                                         <div class="text-sm text-gray-600"><?php echo htmlspecialchars($proveedor_especifico['empresa']); ?></div>
                                                     <?php endif; ?>

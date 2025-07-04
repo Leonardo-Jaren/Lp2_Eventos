@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <div class="text-3xl font-bold">
                                 <?php if ($proveedor_especifico): ?>
-                                    Editar Servicio de <?php echo htmlspecialchars($proveedor_especifico['nombre']); ?>
+                                    Editar Servicio de <?php echo htmlspecialchars($proveedor_especifico['nombre_empresa']); ?>
                                 <?php else: ?>
                                     Editar Servicio
                                 <?php endif; ?>
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         Precio Base
                                     </label>
                                     <div class="relative">
-                                        <input type="number" name="precio_base" id="precio" step="0.01" min="0"
+                                        <input type="number" name="precio" id="precio" step="0.01" min="0"
                                                value="<?php echo htmlspecialchars($servicio['precio']); ?>"
                                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-yellow-100 focus:border-yellow-500 transition-all duration-200 bg-gray-50 focus:bg-white pl-10" 
                                                placeholder="0.00" required>
@@ -132,6 +132,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                     </div>
                                     <p class="mt-2 text-xs text-gray-500">Ingresa el precio base del servicio</p>
+                                </div>
+
+                                <!-- Descripción -->
+                                <div class="group">
+                                    <label for="descripcion" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-align-left text-blue-500 mr-2"></i>
+                                        Descripción del Servicio
+                                    </label>
+                                    <div class="relative">
+                                        <textarea name="descripcion" id="descripcion" rows="4"
+                                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-yellow-100 focus:border-yellow-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none" 
+                                                  placeholder="Describe detalladamente el servicio que ofreces..."><?php echo htmlspecialchars($servicio['descripcion'] ?? ''); ?></textarea>
+                                        <div class="absolute top-3 right-3 pointer-events-none">
+                                            <i class="fas fa-comment text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500">Máximo 500 caracteres (opcional)</p>
                                 </div>
                             </div>
 
@@ -153,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                         <i class="fas fa-building text-yellow-600 text-sm"></i>
                                                     </div>
                                                     <div>
-                                                        <div class="font-semibold text-gray-800"><?php echo htmlspecialchars($proveedor_especifico['nombre']); ?></div>
+                                                        <div class="font-semibold text-gray-800"><?php echo htmlspecialchars($proveedor_especifico['nombre_empresa']); ?></div>
                                                         <?php if (!empty($proveedor_especifico['empresa'])): ?>
                                                             <div class="text-sm text-gray-600"><?php echo htmlspecialchars($proveedor_especifico['empresa']); ?></div>
                                                         <?php endif; ?>

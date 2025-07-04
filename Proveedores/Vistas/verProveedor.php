@@ -15,7 +15,6 @@ $proveedorModel = new Proveedor();
 $proveedores = $proveedorModel->obtenerTodosLosProveedores();
 $rol = $usuario['rol'] ?? 'Cliente';
 
-
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -40,7 +39,7 @@ $rol = $usuario['rol'] ?? 'Cliente';
                 <i class="fas fa-arrow-left mr-2"></i>Atras
             </a>
         </div>
-        
+
         <div class="p-6">
             <!-- Estadísticas -->
             <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -82,9 +81,9 @@ $rol = $usuario['rol'] ?? 'Cliente';
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay proveedores registrados</h3>
                     <p class="text-gray-500 mb-6 max-w-sm mx-auto">Comienza agregando tu primer proveedor para gestionar los servicios de eventos.</p>
                     <?php if ($rol === 'Administrador'): ?>
-                    <a href="crearProveedor.php" class="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                        <i class="fas fa-plus mr-2"></i>Crear Primer Proveedor
-                    </a>
+                        <a href="crearProveedor.php" class="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            <i class="fas fa-plus mr-2"></i>Crear Primer Proveedor
+                        </a>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
@@ -104,17 +103,28 @@ $rol = $usuario['rol'] ?? 'Cliente';
                                         <div class="w-2 h-2 bg-green-400 rounded-full opacity-30"></div>
                                     </div>
                                 </div>
-                                <h3 class="text-white text-lg font-bold mt-3 truncate"><?php echo htmlspecialchars($proveedor['nombre']); ?></h3>
-                                <p class="text-blue-100 text-sm"><?php echo htmlspecialchars($proveedor['empresa']); ?></p>
+                                <h3 class="text-white text-lg font-bold mt-3 truncate"><?php echo htmlspecialchars($proveedor['nombre_empresa']); ?></h3>
+                                <p class="text-blue-100 text-sm"><?php echo htmlspecialchars($proveedor['telefono']); ?></p>
                             </div>
 
                             <!-- Contenido de la card -->
                             <div class="p-4 space-y-3">
                                 <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-envelope text-blue-500 w-5 text-sm mr-3"></i>
-                                    <span class="text-sm truncate"><?php echo htmlspecialchars($proveedor['correo']); ?></span>
+                                    <i class="fas fa-map-marker-alt text-red-500 w-5 text-sm mr-3"></i>
+                                    <span class="text-sm truncate"><?php echo htmlspecialchars($proveedor['direccion']); ?></span>
                                 </div>
-                                
+
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-user text-blue-500 w-5 text-sm mr-3"></i>
+                                    <span class="text-sm">
+                                        <?php if (!empty($proveedor['nombre_usuario'])): ?>
+                                            <?php echo htmlspecialchars($proveedor['nombre_usuario']); ?>
+                                        <?php else: ?>
+                                            <span class="text-gray-400 italic">Sin usuario asignado</span>
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+
                                 <div class="flex items-center text-gray-600">
                                     <i class="fas fa-calendar-check text-green-500 w-5 text-sm mr-3"></i>
                                     <span class="text-sm">Servicios disponibles</span>
@@ -134,27 +144,27 @@ $rol = $usuario['rol'] ?? 'Cliente';
                             <div class="bg-gray-50 p-4 border-t border-gray-100">
                                 <div class="flex justify-between items-center">
                                     <div class="flex space-x-2">
-                                        <a href="verCatalogo.php?id=<?php echo $proveedor['id']; ?>" 
-                                           class="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md" 
-                                           title="Ver Catálogo">
+                                        <a href="verCatalogo.php?id=<?php echo $proveedor['id']; ?>"
+                                            class="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
+                                            title="Ver Catálogo">
                                             <i class="fas fa-book-open text-xs"></i>
                                         </a>
                                         <?php if ($rol === 'Administrador'): ?>
-                                        <a href="editarProveedor.php?id=<?php echo $proveedor['id']; ?>" 
-                                           class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md" 
-                                           title="Editar">
-                                            <i class="fas fa-edit text-xs"></i>
-                                        </a>
-                                        
-                                        <a href="eliminarProveedor.php?id=<?php echo $proveedor['id']; ?>" 
-                                           class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md" 
-                                           title="Eliminar" 
-                                           onclick="return confirm('¿Estás seguro de que deseas eliminar este proveedor?')">
-                                            <i class="fas fa-trash text-xs"></i>
-                                        </a>
+                                            <a href="editarProveedor.php?id=<?php echo $proveedor['id']; ?>"
+                                                class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
+                                                title="Editar">
+                                                <i class="fas fa-edit text-xs"></i>
+                                            </a>
+
+                                            <a href="eliminarProveedor.php?id=<?php echo $proveedor['id']; ?>"
+                                                class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
+                                                title="Eliminar"
+                                                onclick="return confirm('¿Estás seguro de que deseas eliminar este proveedor?')">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </a>
                                         <?php endif; ?>
                                     </div>
-                                    
+
                                     <button class="text-gray-400 hover:text-gray-600 transition duration-200" title="Más opciones">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>

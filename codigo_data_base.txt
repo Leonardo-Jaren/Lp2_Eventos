@@ -18,20 +18,7 @@ id_rol INT,
 FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
--- 3. Tabla de reservas
-CREATE TABLE reservas (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_evento INT,
-fecha DATE NOT NULL,
-hora_inicio TIME,
-hora_fin TIME,
-id_recurso INT,
-estado ENUM('reservado', 'cancelado') DEFAULT 'reservado',
-FOREIGN KEY (id_evento) REFERENCES eventos(id),
-FOREIGN KEY (id_recurso) REFERENCES recursos(id)
-);
-
--- 4. Tabla de proveedores
+-- 3. Tabla de proveedores
 CREATE TABLE proveedores (
 id INT AUTO_INCREMENT PRIMARY KEY,
 nombre VARCHAR(100) NOT NULL,
@@ -47,7 +34,22 @@ id INT AUTO_INCREMENT PRIMARY KEY,
 id_proveedor INT,
 nombre_servicio VARCHAR(100),
 precio DECIMAL(10,2),
+descripcion TEXT,
+recursos JSON,
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
+);
+
+-- 4. Tabla de reservas
+CREATE TABLE reservas (
+id INT AUTO_INCREMENT PRIMARY KEY,
+id_evento INT,
+fecha DATE NOT NULL,
+hora_inicio TIME,
+hora_fin TIME,
+id_recurso INT,
+estado ENUM('reservado', 'cancelado') DEFAULT 'reservado',
+FOREIGN KEY (id_evento) REFERENCES eventos(id),
+FOREIGN KEY (id_recurso) REFERENCES recursos(id)
 );
 
 -- 6. Tabla de contratos

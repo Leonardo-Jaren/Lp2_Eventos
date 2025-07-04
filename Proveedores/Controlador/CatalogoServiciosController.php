@@ -8,7 +8,9 @@ class CatalogoServiciosController {
         $resultado = $catalogoServicios->guardarServicio(
             $datos['id_proveedor'],
             $datos['nombre_servicio'],
-            $datos['precio_base']
+            $datos['descripcion'] ?? '',
+            $datos['precio'],
+            $datos['recursos'] ?? null
         );
         
         if ($resultado) {
@@ -26,7 +28,9 @@ class CatalogoServiciosController {
             $datos['id'],
             $datos['id_proveedor'],
             $datos['nombre_servicio'],
-            $datos['precio_base']
+            $datos['descripcion'] ?? '',
+            $datos['precio'],
+            $datos['recursos'] ?? null
         );
         
         if ($resultado) {

@@ -24,7 +24,7 @@ if ($id_proveedor) {
 $proveedor = new Proveedor();
 $proveedor->encontrarProveedor($id_proveedor);
 
-$rol = $_SESSION['rol'] ?? 'Cliente';
+$rol = $usuario['rol'] ?? 'Cliente';
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -34,7 +34,7 @@ $rol = $_SESSION['rol'] ?? 'Cliente';
             <i class="fas fa-book-open mr-3"></i>
             Catálogo de: <?php echo htmlspecialchars($proveedor->getNombreEmpresa($id_proveedor)); ?>
             </h1>
-            <?php if ($rol === 'Administrador'): ?>
+            <?php if ($rol === 'Administrador' || $rol === 'Proveedor'): ?>
             <a href="crearCatalogo.php?id=<?php echo urlencode($id_proveedor); ?>" 
                 class="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold py-2 px-4 rounded shadow inline-flex items-center">
             <i class="fas fa-plus mr-2"></i>Agregar Servicio
@@ -49,6 +49,7 @@ $rol = $_SESSION['rol'] ?? 'Cliente';
                         <tr>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">ID</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Nombre del servicio</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Descripción</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Precio Base</th>
                             <?php if ($rol === 'Administrador'): ?>
                             <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Acciones</th>
@@ -58,7 +59,7 @@ $rol = $_SESSION['rol'] ?? 'Cliente';
                     <tbody class="divide-y divide-gray-200">
                         <?php if (empty($servicios)): ?>
                             <tr>
-                                <td colspan="4" class="px-4 py-12 text-center text-gray-500">
+                                <td colspan="5" class="px-4 py-12 text-center text-gray-500">
                                     <p>Este proveedor aún no ha registrado servicios.</p>
                                 </td>
                             </tr>
@@ -67,6 +68,12 @@ $rol = $_SESSION['rol'] ?? 'Cliente';
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-4 font-mono text-gray-900"><?php echo htmlspecialchars($servicio['id']); ?></td>
                                     <td class="px-4 py-4 font-medium text-gray-900"><?php echo htmlspecialchars($servicio['nombre_servicio']); ?></td>
+                                    <td class="px-4 py-4 text-gray-700">
+                                        <?php 
+                                        $descripcion = $servicio['descripcion'] ?? '';
+                                        echo $descripcion ? htmlspecialchars(substr($descripcion, 0, 100)) . (strlen($descripcion) > 100 ? '...' : '') : '<span class="text-gray-400 italic">Sin descripción</span>';
+                                        ?>
+                                    </td>
                                     <td class="px-4 py-4 font-mono text-gray-900">S/ <?php echo number_format($servicio['precio'], 2); ?></td>
                                     <?php if ($rol === 'Administrador' || $rol === 'Proveedor'): ?>
                                     <td class="px-4 py-4">
