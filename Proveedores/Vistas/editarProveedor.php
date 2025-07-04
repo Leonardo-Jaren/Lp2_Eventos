@@ -70,24 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <?php
-// Procesar el formulario cuando se envía
 require_once '../Controlador/ProveedorController.php';
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
     $controller = new ProveedorController();
     $mensaje = $controller->editarProveedor($_POST);
+
     if ($mensaje) {
         echo '<div class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">';
         echo '<i class="fas fa-exclamation-triangle mr-2"></i>' . htmlspecialchars($mensaje);
         echo '</div>';
     }
 }
-?>
 
-<?php 
-require_once '../Controlador/ProveedorController.php';
-if(!empty($_POST)) {
-    $proveedorController = new ProveedorController();
-    echo $proveedorController->editarProveedor($_POST);
-}
-include '../../layouts/footer.php'; 
-?>
+require_once '../../layouts/footer.php';

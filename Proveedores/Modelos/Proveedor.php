@@ -122,4 +122,14 @@ class Proveedor {
         $conn->desconectar();
         return $proveedor_reservas;
     }
+
+    public function getNombreEmpresa($id) {
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sqlSelect = "SELECT empresa FROM proveedores WHERE id = '$id'";
+        $stmt = $conexion->query($sqlSelect);
+        $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
+        $conn->desconectar();
+        return $proveedor['empresa'] ?? '';
+    }
 }

@@ -12,12 +12,6 @@ if (!isset($_SESSION['id'])) {
 $proveedorModel = new Proveedor();
 $proveedores = $proveedorModel->obtenerTodosLosProveedores();
 
-// Debug temporal - eliminar después
-if (empty($proveedores)) {
-    error_log("No se encontraron proveedores en la base de datos");
-} else {
-    error_log("Se encontraron " . count($proveedores) . " proveedores");
-}
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -33,6 +27,12 @@ if (empty($proveedores)) {
                         Nuevo Proveedor
                     </a>
             </div>
+        </div>
+
+        <div class="px-6 pt-6">
+            <a href="/Lp2_Eventos/dashboard.php" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">
+                <i class="fas fa-arrow-left mr-2"></i>Atras
+            </a>
         </div>
         
         <div class="p-6">
