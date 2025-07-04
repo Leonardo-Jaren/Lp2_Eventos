@@ -209,6 +209,9 @@ class Reserva{
         if (!empty($filtros['id_usuario'])) {
             $sql .= " AND e.id_cliente = '" . $filtros['id_usuario'] . "'";
         }
+        if (!empty($filtros['buscar'])) {
+            $sql .= " AND (e.titulo LIKE '%" . $filtros['buscar'] . "%' OR e.descripcion LIKE '%" . $filtros['buscar'] . "%')";
+        }
         
         $sql .= " ORDER BY e.fecha_evento DESC, e.hora_inicio DESC";
         $resultado = $conexion->query($sql);
