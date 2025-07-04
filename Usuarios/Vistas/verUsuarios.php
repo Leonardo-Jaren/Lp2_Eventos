@@ -5,6 +5,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
+
 require_once '../../conexion_db.php';
 
 require_once '../../nav.php';

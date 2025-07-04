@@ -18,21 +18,7 @@ id_rol INT,
 FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
--- Tabla para permisos
 
-create table permisos (
-id int auto_increment primary key,
-nombre_permiso varchar(100),
-descripcion text
-);
-
--- Tabla rol_permiso
-create table rol_permiso (
-rol_id INT,
-permiso_id INT,
-foreign key (rol_id) references roles(id),
-FOREIGN KEY (permiso_id) REFERENCES permisos(id)
-);
 -- 3. Tabla de eventos
 CREATE TABLE eventos (
 id INT AUTO_INCREMENT PRIMARY KEY,
