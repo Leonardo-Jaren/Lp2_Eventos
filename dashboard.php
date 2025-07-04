@@ -5,14 +5,11 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$rol = $_SESSION['rol'] ?? 'Cliente';
-
 require_once 'conexion_db.php';
 
 $conexion = new ConexionDB();
 $conn = $conexion->conectar();
 
-// Verificar que el usuario existe y obtener sus datos
 $sqlUser = "SELECT u.nombres, u.correo, r.nombre as rol FROM usuarios u 
             LEFT JOIN roles r ON u.id_rol = r.id 
             WHERE u.id = ?";
@@ -20,9 +17,9 @@ $stmt = $conn->prepare($sqlUser);
 $stmt->execute([$_SESSION['id']]);
 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Verificar si se encontró el usuario
+$rol = $usuario['rol'] ?? 'Cliente';
+
 if (!$usuario) {
-    // Si no se encuentra el usuario, destruir la sesión y redirigir
     session_destroy();
     header("Location: Autenticación/Vista/login.php");
     exit();
