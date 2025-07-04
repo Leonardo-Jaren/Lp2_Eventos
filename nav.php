@@ -33,7 +33,7 @@ require_once 'layouts/header.php';
                     // Obtener información del usuario si no está ya disponible
                     if (!isset($usuario)) {
                         try {
-                            require_once __DIR__ . '/../conexion_db.php';
+                            require_once 'conexion_db.php';
                             $conexion = new ConexionDB();
                             $conn = $conexion->conectar();
                             $sqlUser = "SELECT u.nombres, u.correo, r.nombre as rol FROM usuarios u 

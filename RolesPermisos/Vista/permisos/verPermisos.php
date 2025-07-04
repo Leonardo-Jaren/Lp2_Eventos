@@ -1,15 +1,15 @@
 <?php
-
-require_once '../../Modelo/Permisos.php';
-require_once '../../../layouts/header.php';
-require_once '../../../conexion_db.php';
-require_once '../../../nav.php';
-
 session_start();
 if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
+
+require_once '../../../nav.php';
+$titulo_pagina = 'Gestión de Permisos';
+require_once '../../Modelo/Permisos.php';
+require_once '../../../layouts/header.php';
+require_once '../../../conexion_db.php';
 
 $permisoModel = new Permisos();
 $permisos = $permisoModel->obtenerTodosLosPermisos();
@@ -23,6 +23,11 @@ $permisos = $permisoModel->obtenerTodosLosPermisos();
             <i class="fas fa-key mr-3"></i>Gestión de Permisos
         </h2>
         <p class="text-purple-100 text-center mt-2">Administra y visualiza todos los permisos del sistema</p>
+    </div>
+    <div class="px-6 pt-6">
+        <a href="/Lp2_Eventos/dashboard.php" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">
+            <i class="fas fa-arrow-left mr-2"></i>Atras
+        </a>
     </div>
     <!-- Table Container -->
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">

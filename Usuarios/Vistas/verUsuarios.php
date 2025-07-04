@@ -1,14 +1,17 @@
 <?php
-require_once '../../conexion_db.php';
-require_once '../../layouts/header.php';
-require_once '../Modelos/Usuario.php';
-require_once '../../nav.php';
-
 session_start();
 if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
+
+require_once '../../conexion_db.php';
+
+require_once '../../nav.php';
+$titulo_pagina = 'Gestión de Usuarios';
+include '../../layouts/header.php';
+
+require_once '../Modelos/Usuario.php';
 
 $usuarioModel = new Usuario();
 $usuarios = $usuarioModel->obtenerTodosLosUsuarios();

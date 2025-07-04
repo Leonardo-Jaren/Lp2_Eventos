@@ -1,15 +1,13 @@
 <?php
 session_start();
-
 if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
-require_once '../../nav.php';
 
+require_once '../../nav.php';
 $titulo_pagina = "Gestión de Reservas";
 include '../../layouts/header.php';
-
 require_once '../Modelos/Reserva.php';
 
 $mensaje = $_SESSION['mensaje'] ?? '';
@@ -70,6 +68,11 @@ try {
                     </a>
                 </div>
             </div>
+        </div>
+        <div class="px-6 pt-6">
+            <a href="/Lp2_Eventos/dashboard.php" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">
+                <i class="fas fa-arrow-left mr-2"></i>Atras
+            </a>
         </div>
         
         <div class="p-6">
