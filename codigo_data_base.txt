@@ -18,29 +18,7 @@ id_rol INT,
 FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
-
--- 3. Tabla de eventos
-CREATE TABLE eventos (
-id INT AUTO_INCREMENT PRIMARY KEY,
-titulo VARCHAR(100) NOT NULL,
-descripcion TEXT,
-fecha_evento DATE NOT NULL,
-hora_inicio TIME,
-hora_fin TIME,
-estado ENUM('pendiente', 'confirmado', 'cancelado') DEFAULT 'pendiente',
-id_usuario INT,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- 4. Tabla de recursos
-CREATE TABLE recursos (
-id INT AUTO_INCREMENT PRIMARY KEY,
-tipo VARCHAR(50) NOT NULL,
-descripcion TEXT,
-disponible BOOLEAN DEFAULT TRUE
-);
-
--- 5. Tabla de reservas
+-- 3. Tabla de reservas
 CREATE TABLE reservas (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_evento INT,
@@ -53,7 +31,7 @@ FOREIGN KEY (id_evento) REFERENCES eventos(id),
 FOREIGN KEY (id_recurso) REFERENCES recursos(id)
 );
 
--- 6. Tabla de proveedores
+-- 4. Tabla de proveedores
 CREATE TABLE proveedores (
 id INT AUTO_INCREMENT PRIMARY KEY,
 nombre VARCHAR(100) NOT NULL,
@@ -63,7 +41,7 @@ id_usuario INT,
 FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- 7. Tabla de servicios_proveedor
+-- 5. Tabla de servicios_proveedor
 CREATE TABLE servicios_proveedor (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_proveedor INT,
@@ -72,7 +50,7 @@ precio DECIMAL(10,2),
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
--- 8. Tabla de contratos
+-- 6. Tabla de contratos
 CREATE TABLE contratos (
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_proveedor INT,
@@ -81,35 +59,6 @@ fecha_fin DATE,
 archivo_pdf VARCHAR(255),
 estado ENUM('activo', 'finalizado') DEFAULT 'activo',
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
-);
-
--- 10. Tabla de quejas
-CREATE TABLE quejas (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_usuario INT,
-descripcion TEXT,
-fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- 11. Tabla de notificaciones
-CREATE TABLE notificaciones (
-id INT AUTO_INCREMENT PRIMARY KEY,
-id_usuario INT,
-mensaje TEXT NOT NULL,
-leido BOOLEAN DEFAULT FALSE,
-fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-
--- 12. Tabla de reportes
-CREATE TABLE reportes (
-id INT AUTO_INCREMENT PRIMARY KEY,
-tipo VARCHAR(50),
-id_usuario INT,
-fecha_generado DATETIME DEFAULT CURRENT_TIMESTAMP,
-archivo_pdf VARCHAR(255),
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
 -- 13. Inserción de roles base

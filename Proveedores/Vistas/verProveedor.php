@@ -29,7 +29,7 @@ $rol = $usuario['rol'] ?? 'Cliente';
                 <?php if ($rol === 'Administrador'): ?>
                     <a href="crearProveedor.php" class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-100 font-medium transition-transform transform hover:scale-105">
                         <i class="fas fa-plus mr-2"></i>
-                        Nuevo Proveedor
+                        Nuevo proveedor
                     </a>
                 <?php endif; ?>
             </div>

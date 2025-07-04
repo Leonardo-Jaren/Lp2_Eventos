@@ -1,9 +1,11 @@
 <?php
 
-require_once '../Modelos/Usuario.php';
+require_once __DIR__ . '/../Modelos/Usuario.php';
 
-class UsuarioController {
-    public function registrarUsuario(array $datos) {
+class UsuarioController
+{
+    public function registrarUsuario(array $datos)
+    {
         $usuario = new Usuario();
         $resultado = $usuario->registrarUsuario(
             $datos['nombres'],
@@ -20,7 +22,8 @@ class UsuarioController {
         }
     }
 
-    public function actualizarUsuario(array $datos) {
+    public function actualizarUsuario(array $datos)
+    {
         $usuario = new Usuario();
         $resultado = $usuario->actualizarUsuario(
             $datos['id'],
@@ -37,7 +40,8 @@ class UsuarioController {
         }
     }
 
-    public function eliminarUsuario($id) {
+    public function eliminarUsuario($id)
+    {
         $usuario = new Usuario();
         $resultado = $usuario->eliminarUsuario($id);
         if ($resultado) {
@@ -47,5 +51,38 @@ class UsuarioController {
             return "Error al eliminar el usuario.";
         }
     }
+
+    public function actualizarPerfil(array $datos)
+    {
+        $usuario = new Usuario();
+
+        if ($usuario->verificarCorreoExistente($datos['correo'], $datos['id'])) {
+            return ["success" => false, "message" => "El correo electrónico ya está registrado por otro usuario."];
+        }
+
+        $password = null;
+        if (!empty($datos['password'])) {
+            $password = password_hash($datos['password'], PASSWORD_DEFAULT);
+        }
+
+        $resultado = $usuario->actualizarPerfil(
+            $datos['id'],
+            $datos['nombres'],
+            $datos['apellidos'],
+            $datos['correo'],
+            $password
+        );
+
+        if ($resultado) {
+            return ["success" => true, "message" => "Perfil actualizado exitosamente."];
+        } else {
+            return ["success" => false, "message" => "Error al actualizar el perfil."];
+        }
+    }
+
+    public function obtenerPerfilUsuario($id)
+    {
+        $usuario = new Usuario();
+        return $usuario->obtenerUsuarioConRol($id);
+    }
 }
-?>
