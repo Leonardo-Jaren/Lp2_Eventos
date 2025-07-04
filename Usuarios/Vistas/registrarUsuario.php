@@ -1,12 +1,12 @@
 <?php
 require_once '../../conexion_db.php';
 require_once '../../layouts/header.php';
+require_once '../Controlador/UsuarioController.php';
 
 $mensaje = '';
 $tipoMensaje = '';
 
 if (!empty($_POST)) {
-    require_once '../Controlador/UsuarioController.php';
     $usuarioController = new UsuarioController();
     
     require_once '../Modelos/Usuario.php';
@@ -28,23 +28,9 @@ if (!empty($_POST)) {
     <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Registrar Usuario</h2>
 
-        <!-- Mostrar mensaje de error o éxito -->
         <?php if ($mensaje): ?>
-            <div class="mb-4 p-4 rounded-md <?php echo $tipoMensaje === 'error' ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'; ?>">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <?php if ($tipoMensaje === 'error'): ?>
-                            <i class="fas fa-exclamation-circle text-red-400"></i>
-                        <?php else: ?>
-                            <i class="fas fa-check-circle text-green-400"></i>
-                        <?php endif; ?>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm <?php echo $tipoMensaje === 'error' ? 'text-red-700' : 'text-green-700'; ?>">
-                            <?php echo htmlspecialchars($mensaje); ?>
-                        </p>
-                    </div>
-                </div>
+            <div class="mb-4 text-center text-sm text-red-600 font-semibold">
+                <?php echo htmlspecialchars($mensaje); ?>
             </div>
         <?php endif; ?>
 
@@ -74,6 +60,7 @@ if (!empty($_POST)) {
                 <label class="block text-sm font-medium text-gray-700">Contraseña</label>
                 <input type="password" name="password" placeholder="Contraseña" required
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="text-xs text-gray-500">Mínimo 8 caracteres y al menos 1 número.</span>
             </div>
 
             <div>
@@ -116,5 +103,3 @@ if (!empty($_POST)) {
         </div>
     </div>
 </div>
-
-<?php require_once '../../layouts/footer.php'; ?>

@@ -5,10 +5,33 @@ if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();
 }
-require_once '../../nav.php';
+
+// Procesamiento del formulario de edición
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_evento'])) {
+    require_once '../Controlador/ReservaController.php';
+    
+    $reservaController = new ReservaController();
+    $datos = [
+        'id' => $_POST['id_evento'],
+        'titulo' => $_POST['titulo'],
+        'descripcion' => $_POST['descripcion'],
+        'fecha_evento' => $_POST['fecha_evento'],
+        'hora_inicio' => $_POST['hora_inicio'],
+        'hora_fin' => $_POST['hora_fin'],
+        'id_usuario' => $_SESSION['id']
+    ];
+    
+    if ($datos['id'] && $datos['titulo'] && $datos['fecha_evento'] && $datos['hora_inicio'] && $datos['hora_fin']) {
+        $resultado = $reservaController->actualizar($datos);
+        // El controlador ya maneja la redirección
+    } else {
+        $_SESSION['mensaje'] = 'Todos los campos son obligatorios';
+        $_SESSION['tipo_mensaje'] = 'error';
+    }
+}
 
 $titulo_pagina = "Editar Reserva";
-include '../../layouts/header.php';
+require_once '../../nav.php';
 
 $mensaje = $_SESSION['mensaje'] ?? '';
 $tipo_mensaje = $_SESSION['tipo_mensaje'] ?? '';
@@ -66,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             try {
                 $reservaModel = new Reserva();
-                $disponible = $reservaModel->verificarDisponibilidadEdicion($fecha, $hora_inicio, $hora_fin, $id_evento_actual);
+                $disponible = $reservaModel->verificarDisponibilidad($fecha, $hora_inicio, $hora_fin, $evento['id_usuario'], $id_evento_actual);
                 if ($disponible) {
                     $verificacion_resultado = 'Horario disponible. Puede proceder a actualizar la reserva.';
                     $verificacion_tipo = 'success';
@@ -121,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             </div>
 
-            <form method="POST" action="../Controlador/ReservaController.php?accion=editar">
+            <form method="POST" action="">
                 <input type="hidden" name="id_evento" value="<?php echo $evento['id']; ?>">
                 
                 <div class="grid grid-cols-1 gap-6">
@@ -158,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
 
-                    <div>
+                    <!-- <div>
                         <label for="id_recurso" class="block text-sm font-medium text-gray-700 mb-2">Recurso</label>
                         <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" 
                                 id="id_recurso" name="id_recurso">
@@ -167,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <p class="text-xs text-gray-500 mt-1">
                             Recurso actual: <?php echo $evento['tipo_recurso'] ? htmlspecialchars($evento['tipo_recurso']) : 'Sin recurso'; ?>
                         </p>
-                    </div>
+                    </div> -->
 
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <h3 class="text-lg font-medium text-gray-900 mb-3 flex items-center">
@@ -207,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </h3>
                         <ul class="text-sm text-yellow-800 space-y-1">
                             <li>• Si cambia la fecha o hora, verifique la disponibilidad antes de guardar</li>
-                            <li>• Los cambios pueden afectar recursos asignados y notificaciones</li>
+                            <!-- <li>• Los cambios pueden afectar recursos asignados y notificaciones</li> -->
                             <li>• Este evento tiene estado: <strong><?php echo ucfirst($evento['estado']); ?></strong></li>
                         </ul>
                     </div>
@@ -222,10 +245,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <i class="fas fa-arrow-left mr-2"></i>
                             Cancelar
                         </a>
-                        <a href="cambiarFechaReserva.php?id=<?php echo $evento['id']; ?>" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors duration-200 text-center flex items-center justify-center">
+                        <!-- <a href="cambiarFechaReserva.php?id=<?php echo $evento['id']; ?>" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors duration-200 text-center flex items-center justify-center">
                             <i class="fas fa-calendar-alt mr-2"></i>
                             Solo Cambiar Fecha
-                        </a>
+                        </a> -->
                     </div>
                 </div>
             </form>

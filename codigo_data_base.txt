@@ -1,21 +1,22 @@
-create database lp2_eventos;
-use lp2_eventos;
+-- Base de datos LP2 Eventos - Versión refactorizada sin bucles
+CREATE DATABASE lp2_eventos02;
+USE lp2_eventos02;
 
 -- 1. Tabla de roles
 CREATE TABLE roles (
-id INT AUTO_INCREMENT PRIMARY KEY,
-nombre VARCHAR(50) UNIQUE NOT NULL
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL
 );
 
--- 2. Tabla de usuarios
+-- 2. Tabla de usuarios (tabla principal sin dependencias)
 CREATE TABLE usuarios (
-id INT AUTO_INCREMENT PRIMARY KEY,
-nombres VARCHAR(100) NOT NULL,
-apellidos varchar(100) not null,
-correo VARCHAR(100) UNIQUE NOT NULL,
-password VARCHAR(255) NOT NULL,
-id_rol INT,
-FOREIGN KEY (id_rol) REFERENCES roles(id)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    id_rol INT NOT NULL,
+    FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
 -- 3. Tabla de proveedores
@@ -63,30 +64,19 @@ estado ENUM('activo', 'finalizado') DEFAULT 'activo',
 FOREIGN KEY (id_proveedor) REFERENCES proveedores(id)
 );
 
--- 13. Inserción de roles base
+-- 10. Inserción de roles base
 INSERT INTO roles (nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),
 ('Administrador');
 
--- 14. Inserción de usuarios de ejemplo
--- IMPORTANTE: Ejecutar después de insertar los roles
-INSERT INTO usuarios (id_rol, nombres, apellidos, correo, password) VALUES
-(3, 'Juan Carlos', 'Pérez', 'juan.organizador@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-(1, 'María Elena', 'González', 'maria.cliente@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-(2, 'Carlos Alberto', 'Ramírez', 'carlos.proveedor@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-(4, 'Ana Sofía', 'Torres', 'ana.admin@eventos.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
-
--- 15. Inserción de eventos de ejemplo (opcional)
--- IMPORTANTE: Ejecutar después de insertar los usuarios
-INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_usuario, estado) VALUES
-('Reunión de Planificación', 'Reunión mensual del equipo de planificación', '2025-07-15', '09:00:00', '11:00:00', 1, 'pendiente'),
-('Conferencia Anual', 'Conferencia anual de la empresa', '2025-08-20', '08:00:00', '17:00:00', 1, 'confirmado'),
-('Workshop de Tecnología', 'Capacitación en nuevas tecnologías', '2025-07-25', '14:00:00', '18:00:00', 1, 'pendiente');
-
--- NOTAS IMPORTANTES:
--- 1. Ejecutar primero todas las sentencias CREATE TABLE
--- 2. Luego ejecutar los INSERT en el orden especificado (roles -> usuarios -> eventos)
--- 3. Si hay errores de foreign key, verificar que las tablas referenciadas tengan datos
--- 4. El password usado es "password" encriptado con bcrypt (para pruebas)
+-- 11. Índices para optimizar consultas
+CREATE INDEX idx_usuarios_correo ON usuarios(correo);
+CREATE INDEX idx_usuarios_rol ON usuarios(id_rol);
+CREATE INDEX idx_eventos_fecha ON eventos(fecha_evento);
+CREATE INDEX idx_eventos_cliente ON eventos(id_cliente);
+CREATE INDEX idx_servicios_proveedor ON servicios(id_proveedor);
+CREATE INDEX idx_solicitudes_evento ON solicitudes_servicio(id_evento);
+CREATE INDEX idx_solicitudes_servicio ON solicitudes_servicio(id_servicio);
+CREATE INDEX idx_contratos_solicitud ON contratos(id_solicitud);
