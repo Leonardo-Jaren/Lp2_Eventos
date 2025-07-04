@@ -1,122 +1,234 @@
 <?php
-require_once __DIR__ . '/../../conexion_db.php';
 
-class Reserva {
-    private $conexion;
+require_once "../../conexion_db.php";
 
-    public function __construct() {
+class Reserva{
+    public function mostrar(){
         $conn = new ConexionDB();
-        $this->conexion = $conn->conectar();
+        $conexion = $conn->conectar();
+        $sql = "SELECT e.*, 
+                       u_cliente.nombres as cliente_nombres, u_cliente.apellidos as cliente_apellidos,
+                       u_organizador.nombres as organizador_nombres, u_organizador.apellidos as organizador_apellidos,
+                       CONCAT(u_organizador.nombres, ' ', u_organizador.apellidos) as organizador
+                FROM eventos e 
+                LEFT JOIN usuarios u_cliente ON e.id_cliente = u_cliente.id 
+                LEFT JOIN usuarios u_organizador ON e.id_organizador = u_organizador.id
+                ORDER BY e.fecha_evento DESC, e.hora_inicio DESC";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 
-    public function crearReserva($titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_usuario, $id_recurso = null) {
+    public function guardar($titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_usuario){
+        // Verificar disponibilidad antes de guardar
         if (!$this->verificarDisponibilidad($fecha_evento, $hora_inicio, $hora_fin, $id_usuario)) {
-            throw new Exception("Ya existe un evento en esa fecha y hora");
+            return 0; // No disponible
         }
-        $stmt = $this->conexion->prepare("INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_usuario) VALUES (?, ?, ?, ?, ?, ?)");
-        if (!$stmt->execute([$titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_usuario])) {
-            throw new Exception("Error al crear el evento");
+
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "INSERT INTO eventos(titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_cliente, id_organizador, estado) 
+                VALUES ('$titulo', '$descripcion', '$fecha_evento', '$hora_inicio', '$hora_fin', '$id_usuario', '$id_usuario', 'confirmado')";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        
+        return $resultado;
+    }
+
+    public function eliminar($id){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "UPDATE eventos SET estado = 'cancelado' WHERE id = $id";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
+    }
+
+    public function buscar($id){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT * FROM eventos WHERE id = $id";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
+    }
+
+    public function obtenerEventoPorId($id){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT e.*, 
+                       u_cliente.nombres as cliente_nombres, u_cliente.apellidos as cliente_apellidos,
+                       u_organizador.nombres as organizador_nombres, u_organizador.apellidos as organizador_apellidos,
+                       CONCAT(u_organizador.nombres, ' ', u_organizador.apellidos) as organizador
+                FROM eventos e 
+                LEFT JOIN usuarios u_cliente ON e.id_cliente = u_cliente.id 
+                LEFT JOIN usuarios u_organizador ON e.id_organizador = u_organizador.id
+                WHERE e.id = $id";
+        $resultado = $conexion->query($sql);
+        $evento = $resultado->fetch();
+        $conn->desconectar();
+        return $evento;
+    }
+    
+    public function actualizar($id, $titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_usuario){
+        // Verificar disponibilidad antes de actualizar (excluyendo el evento actual)
+        if (!$this->verificarDisponibilidadExcluir($fecha_evento, $hora_inicio, $hora_fin, $id_usuario, $id)) {
+            return 0; // No disponible
         }
-        return $this->conexion->lastInsertId();
+
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "UPDATE eventos SET titulo = '$titulo', descripcion = '$descripcion', 
+                fecha_evento = '$fecha_evento', hora_inicio = '$hora_inicio', 
+                hora_fin = '$hora_fin', id_cliente = '$id_usuario', id_organizador = '$id_usuario' WHERE id = $id";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 
-    public function verificarDisponibilidad($fecha, $hora_inicio, $hora_fin, $id_usuario, $id_evento_excluir = null) {
-        $sql = "SELECT COUNT(*) as total FROM eventos WHERE id_usuario = ? AND fecha_evento = ? AND estado != 'cancelado'
-                AND ((hora_inicio <= ? AND hora_fin > ?) OR (hora_inicio < ? AND hora_fin >= ?) OR (hora_inicio >= ? AND hora_fin <= ?))";
-        $params = [$id_usuario, $fecha, $hora_inicio, $hora_inicio, $hora_fin, $hora_fin, $hora_inicio, $hora_fin];
-        if ($id_evento_excluir) {
-            $sql .= " AND id != ?";
-            $params[] = $id_evento_excluir;
-        }
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetch(PDO::FETCH_ASSOC)['total'] == 0;
+    public function verificarDisponibilidad($fecha, $hora_inicio, $hora_fin, $id_usuario){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT COUNT(*) as total FROM eventos 
+                WHERE id_cliente = '$id_usuario' AND fecha_evento = '$fecha' AND estado != 'cancelado'
+                AND ((hora_inicio <= '$hora_inicio' AND hora_fin > '$hora_inicio') 
+                     OR (hora_inicio < '$hora_fin' AND hora_fin >= '$hora_fin') 
+                     OR (hora_inicio >= '$hora_inicio' AND hora_fin <= '$hora_fin'))";
+        $resultado = $conexion->query($sql);
+        $fila = $resultado->fetch();
+        $conn->desconectar();
+        return $fila['total'] == 0;
     }
 
-    public function editarReserva($id_evento, $titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_recurso = null) {
-        $evento = $this->obtenerEventoPorId($id_evento);
-        if (!$evento) throw new Exception("Evento no encontrado");
-        if ($evento['fecha_evento'] != $fecha_evento || $evento['hora_inicio'] != $hora_inicio || $evento['hora_fin'] != $hora_fin) {
-            if (!$this->verificarDisponibilidad($fecha_evento, $hora_inicio, $hora_fin, $evento['id_usuario'], $id_evento)) {
-                throw new Exception("La nueva fecha y hora ya están ocupadas");
-            }
-        }
-        $stmt = $this->conexion->prepare("UPDATE eventos SET titulo = ?, descripcion = ?, fecha_evento = ?, hora_inicio = ?, hora_fin = ? WHERE id = ?");
-        return $stmt->execute([$titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_evento]);
+    public function verificarDisponibilidadExcluir($fecha, $hora_inicio, $hora_fin, $id_usuario, $id_excluir){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT COUNT(*) as total FROM eventos 
+                WHERE id_cliente = '$id_usuario' AND fecha_evento = '$fecha' AND estado != 'cancelado'
+                AND id != '$id_excluir'
+                AND ((hora_inicio <= '$hora_inicio' AND hora_fin > '$hora_inicio') 
+                     OR (hora_inicio < '$hora_fin' AND hora_fin >= '$hora_fin') 
+                     OR (hora_inicio >= '$hora_inicio' AND hora_fin <= '$hora_fin'))";
+        $resultado = $conexion->query($sql);
+        $fila = $resultado->fetch();
+        $conn->desconectar();
+        return $fila['total'] == 0;
     }
 
-    public function cancelarReserva($id_evento, $motivo = '') {
-        $stmt = $this->conexion->prepare("UPDATE eventos SET estado = 'cancelado' WHERE id = ?");
-        return $stmt->execute([$id_evento]);
+    public function obtenerPorUsuario($id_usuario){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT * FROM eventos WHERE id_cliente = '$id_usuario' AND estado != 'cancelado' 
+                ORDER BY fecha_evento DESC, hora_inicio DESC";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 
-    public function cambiarFechaReserva($id_evento, $nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $motivo = '') {
-        $evento = $this->obtenerEventoPorId($id_evento);
-        if (!$evento) throw new Exception("Evento no encontrado");
-        if (!$this->verificarDisponibilidad($nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $evento['id_usuario'], $id_evento)) {
-            throw new Exception("La nueva fecha y hora ya están ocupadas");
-        }
-        $stmt = $this->conexion->prepare("UPDATE eventos SET fecha_evento = ?, hora_inicio = ?, hora_fin = ? WHERE id = ?");
-        return $stmt->execute([$nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $id_evento]);
+    public function obtenerTodasReservas(){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT e.*, 
+                       u_cliente.nombres as cliente_nombres, u_cliente.apellidos as cliente_apellidos,
+                       u_organizador.nombres as organizador_nombres, u_organizador.apellidos as organizador_apellidos,
+                       CONCAT(u_organizador.nombres, ' ', u_organizador.apellidos) as organizador
+                FROM eventos e 
+                LEFT JOIN usuarios u_cliente ON e.id_cliente = u_cliente.id 
+                LEFT JOIN usuarios u_organizador ON e.id_organizador = u_organizador.id
+                ORDER BY e.fecha_evento DESC, e.hora_inicio DESC";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 
-    public function obtenerReservas($filtros = []) {
-        $sql = "SELECT e.*, u.nombres as organizador FROM eventos e LEFT JOIN usuarios u ON e.id_usuario = u.id WHERE 1=1";
-        $params = [];
-        foreach (['fecha_inicio' => 'e.fecha_evento >= ?', 'fecha_fin' => 'e.fecha_evento <= ?', 'estado' => 'e.estado = ?', 'id_usuario' => 'e.id_usuario = ?'] as $key => $condition) {
-            if (!empty($filtros[$key])) {
-                $sql .= " AND $condition";
-                $params[] = $filtros[$key];
-            }
-        }
-        $sql .= " ORDER BY e.fecha_evento DESC, e.hora_inicio DESC";
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function obtenerTodasReservas() {
-        $stmt = $this->conexion->prepare("SELECT e.id, e.titulo, e.descripcion, e.fecha_evento, e.hora_inicio, e.hora_fin, e.estado, u.nombres as organizador FROM eventos e INNER JOIN usuarios u ON e.id_usuario = u.id ORDER BY e.fecha_evento DESC, e.hora_inicio DESC");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function obtenerHistorialReservas($id_usuario = null, $limite = 50) {
-        $sql = "SELECT e.*, u.nombres as organizador FROM eventos e LEFT JOIN usuarios u ON e.id_usuario = u.id WHERE e.fecha_evento < CURDATE()";
-        $params = [];
+    public function obtenerHistorialReservas($id_usuario = null, $limite = 50){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT e.*, 
+                       u_cliente.nombres as cliente_nombres, u_cliente.apellidos as cliente_apellidos,
+                       u_organizador.nombres as organizador_nombres, u_organizador.apellidos as organizador_apellidos,
+                       CONCAT(u_organizador.nombres, ' ', u_organizador.apellidos) as organizador
+                FROM eventos e 
+                LEFT JOIN usuarios u_cliente ON e.id_cliente = u_cliente.id 
+                LEFT JOIN usuarios u_organizador ON e.id_organizador = u_organizador.id
+                WHERE e.fecha_evento < CURDATE()";
         if ($id_usuario) {
-            $sql .= " AND e.id_usuario = ?";
-            $params[] = $id_usuario;
+            $sql .= " AND e.id_cliente = '$id_usuario'";
         }
         $sql .= " ORDER BY e.fecha_evento DESC LIMIT " . intval($limite);
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 
-    public function obtenerEventoPorId($id_evento) {
-        $stmt = $this->conexion->prepare("SELECT e.*, u.nombres as organizador FROM eventos e LEFT JOIN usuarios u ON e.id_usuario = u.id WHERE e.id = ?");
-        $stmt->execute([$id_evento]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    public function cambiarFechaReserva($id_evento, $nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $motivo = ''){
+        // Obtener el evento actual
+        $evento_actual = $this->buscar($id_evento);
+        if (!$evento_actual) {
+            return 0; // Evento no encontrado
+        }
+        
+        $evento_data = $evento_actual->fetch();
+        
+        // Verificar disponibilidad antes de cambiar
+        if (!$this->verificarDisponibilidadExcluir($nueva_fecha, $nueva_hora_inicio, $nueva_hora_fin, $evento_data['id_cliente'], $id_evento)) {
+            return 0; // No disponible
+        }
+
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "UPDATE eventos SET fecha_evento = '$nueva_fecha', hora_inicio = '$nueva_hora_inicio', 
+                hora_fin = '$nueva_hora_fin' WHERE id = $id_evento";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 
-    public function obtenerCalendarioDisponibilidad($mes, $año, $id_usuario = null) {
-        $sql = "SELECT DATE(fecha_evento) as fecha, COUNT(*) as eventos FROM eventos WHERE MONTH(fecha_evento) = ? AND YEAR(fecha_evento) = ? AND estado != 'cancelado'";
-        $params = [$mes, $año];
+    public function obtenerReservasConFiltros($filtros = []){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT e.*, 
+                       u_cliente.nombres as cliente_nombres, u_cliente.apellidos as cliente_apellidos,
+                       u_organizador.nombres as organizador_nombres, u_organizador.apellidos as organizador_apellidos,
+                       CONCAT(u_organizador.nombres, ' ', u_organizador.apellidos) as organizador
+                FROM eventos e 
+                LEFT JOIN usuarios u_cliente ON e.id_cliente = u_cliente.id 
+                LEFT JOIN usuarios u_organizador ON e.id_organizador = u_organizador.id
+                WHERE 1=1";
+        
+        // Aplicar filtros
+        if (!empty($filtros['fecha_inicio'])) {
+            $sql .= " AND e.fecha_evento >= '" . $filtros['fecha_inicio'] . "'";
+        }
+        if (!empty($filtros['fecha_fin'])) {
+            $sql .= " AND e.fecha_evento <= '" . $filtros['fecha_fin'] . "'";
+        }
+        if (!empty($filtros['estado'])) {
+            $sql .= " AND e.estado = '" . $filtros['estado'] . "'";
+        }
+        if (!empty($filtros['id_usuario'])) {
+            $sql .= " AND e.id_cliente = '" . $filtros['id_usuario'] . "'";
+        }
+        
+        $sql .= " ORDER BY e.fecha_evento DESC, e.hora_inicio DESC";
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
+    }
+
+    public function obtenerCalendarioDisponibilidad($mes, $año, $id_usuario = null){
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sql = "SELECT DATE(fecha_evento) as fecha, COUNT(*) as eventos 
+                FROM eventos 
+                WHERE MONTH(fecha_evento) = '$mes' AND YEAR(fecha_evento) = '$año' AND estado != 'cancelado'";
         if ($id_usuario) {
-            $sql .= " AND id_usuario = ?";
-            $params[] = $id_usuario;
+            $sql .= " AND id_cliente = '$id_usuario'";
         }
         $sql .= " GROUP BY DATE(fecha_evento)";
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function obtenerRecursosDisponibles() {
-        $stmt = $this->conexion->prepare("SELECT * FROM recursos WHERE disponible = 1 ORDER BY tipo, descripcion");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $resultado = $conexion->query($sql);
+        $conn->desconectar();
+        return $resultado;
     }
 }
 ?>
