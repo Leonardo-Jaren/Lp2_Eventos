@@ -41,7 +41,8 @@ class UsuarioController {
         $usuario = new Usuario();
         $resultado = $usuario->eliminarUsuario($id);
         if ($resultado) {
-            return true;
+            header("Location: ../../RolesPermisos/Vista/permisos/verPermisos.php");
+            exit();
         } else {
             return "Error al eliminar el usuario.";
         }

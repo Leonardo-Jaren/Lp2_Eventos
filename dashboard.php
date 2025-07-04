@@ -135,6 +135,24 @@ require_once 'nav.php';
                     <a href="Proveedores/Vistas/verProveedor.php" class="text-purple-600 hover:text-purple-800">Ver todos →</a>
                 </div>
             </div>
+
+            <!-- Permisos -->
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-orange-100 rounded-full">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Permisos</h3>
+                        <p class="text-gray-600">Gestionar permisos del sistema</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="RolesPermisos/Vista/permisos/verPermisos.php" class="text-orange-600 hover:text-orange-800">Ver todos →</a>
+                </div>
+            </div>
         </div>
 
         <!-- Estadísticas Rápidas -->

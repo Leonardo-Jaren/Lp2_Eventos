@@ -5,7 +5,6 @@ require_once '../Modelos/Usuario.php';
 require_once '../../nav.php';
 
 session_start();
-
 if (!isset($_SESSION['id'])) {
     header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
     exit();

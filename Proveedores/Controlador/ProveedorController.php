@@ -1,6 +1,5 @@
 <?php
 
-// Incluir los modelos necesarios
 require_once '../Modelos/Proveedor.php';
 require_once '../Modelos/CatalogoServicios.php';
 
