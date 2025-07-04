@@ -164,10 +164,6 @@ $rol = $usuario['rol'] ?? 'Cliente';
                                             </a>
                                         <?php endif; ?>
                                     </div>
-
-                                    <button class="text-gray-400 hover:text-gray-600 transition duration-200" title="Más opciones">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
                                 </div>
                             </div>
                         </div>
