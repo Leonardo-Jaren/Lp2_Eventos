@@ -1,12 +1,5 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['id'])) {
-    header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
-    exit();
-}
-require_once '../../nav.php';
-
 $titulo_pagina = "Cambiar Fecha de Reserva";
 include '../../layouts/header.php';
 

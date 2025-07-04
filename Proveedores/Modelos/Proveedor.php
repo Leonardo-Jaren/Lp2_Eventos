@@ -108,7 +108,7 @@ class Proveedor {
                     r.nombre_evento,
                     r.fecha_evento,
                     r.lugar,
-                    u.nombres AS nombre_cliente,
+                    u.nombre AS nombre_cliente,
                     cs.nombre_servicio,
                     ep.estado_participacion
                 FROM evento_proveedores ep

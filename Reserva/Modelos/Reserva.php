@@ -12,46 +12,48 @@ class Reserva {
 
     public function crearReserva($titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_usuario, $id_recurso = null) {
         try {
-            // Verificar disponibilidad básica
-            if (!$this->verificarDisponibilidadSimple($fecha_evento, $hora_inicio, $hora_fin, $id_usuario)) {
-                throw new Exception("Ya existe una reserva en esa fecha y hora para este organizador");
+            $this->conexion->beginTransaction();
+
+            if (!$this->verificarDisponibilidad($fecha_evento, $hora_inicio, $hora_fin, $id_usuario)) {
+                throw new Exception("Ya existe un evento en esa fecha y hora para este organizador");
             }
 
-            // Insertar en la tabla eventos
-            $sql = "INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_usuario, estado) 
-                    VALUES (:titulo, :descripcion, :fecha_evento, :hora_inicio, :hora_fin, :id_usuario, 'pendiente')";
+            $sqlEvento = "INSERT INTO eventos (titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_usuario) 
+                         VALUES (:titulo, :descripcion, :fecha_evento, :hora_inicio, :hora_fin, :id_usuario)";
             
-            $stmt = $this->conexion->prepare($sql);
-            $stmt->bindParam(':titulo', $titulo);
-            $stmt->bindParam(':descripcion', $descripcion);
-            $stmt->bindParam(':fecha_evento', $fecha_evento);
-            $stmt->bindParam(':hora_inicio', $hora_inicio);
-            $stmt->bindParam(':hora_fin', $hora_fin);
-            $stmt->bindParam(':id_usuario', $id_usuario);
+            $stmtEvento = $this->conexion->prepare($sqlEvento);
+            $stmtEvento->bindParam(':titulo', $titulo);
+            $stmtEvento->bindParam(':descripcion', $descripcion);
+            $stmtEvento->bindParam(':fecha_evento', $fecha_evento);
+            $stmtEvento->bindParam(':hora_inicio', $hora_inicio);
+            $stmtEvento->bindParam(':hora_fin', $hora_fin);
+            $stmtEvento->bindParam(':id_usuario', $id_usuario);
             
-            if (!$stmt->execute()) {
-                throw new Exception("Error al crear la reserva");
+            if (!$stmtEvento->execute()) {
+                throw new Exception("Error al crear el evento");
             }
 
             $id_evento = $this->conexion->lastInsertId();
 
-            // Si se especifica un recurso, crear una entrada en la tabla reservas
-            if ($id_recurso) {
-                $sql_reserva = "INSERT INTO reservas (id_evento, fecha, hora_inicio, hora_fin, id_recurso, estado) 
-                               VALUES (:id_evento, :fecha, :hora_inicio, :hora_fin, :id_recurso, 'reservado')";
-                
-                $stmt_reserva = $this->conexion->prepare($sql_reserva);
-                $stmt_reserva->bindParam(':id_evento', $id_evento);
-                $stmt_reserva->bindParam(':fecha', $fecha_evento);
-                $stmt_reserva->bindParam(':hora_inicio', $hora_inicio);
-                $stmt_reserva->bindParam(':hora_fin', $hora_fin);
-                $stmt_reserva->bindParam(':id_recurso', $id_recurso);
-                $stmt_reserva->execute();
+            $sqlReserva = "INSERT INTO reservas (id_evento, fecha, hora_inicio, hora_fin, id_recurso) 
+                          VALUES (:id_evento, :fecha, :hora_inicio, :hora_fin, :id_recurso)";
+            
+            $stmtReserva = $this->conexion->prepare($sqlReserva);
+            $stmtReserva->bindParam(':id_evento', $id_evento);
+            $stmtReserva->bindParam(':fecha', $fecha_evento);
+            $stmtReserva->bindParam(':hora_inicio', $hora_inicio);
+            $stmtReserva->bindParam(':hora_fin', $hora_fin);
+            $stmtReserva->bindParam(':id_recurso', $id_recurso);
+            
+            if (!$stmtReserva->execute()) {
+                throw new Exception("Error al crear la reserva");
             }
 
+            $this->conexion->commit();
             return $id_evento;
 
         } catch (Exception $e) {
+            $this->conexion->rollback();
             throw $e;
         }
     }
@@ -217,7 +219,7 @@ class Reserva {
 
     public function obtenerReservas($filtros = []) {
         $sql = "SELECT e.*, r.id as reserva_id, r.estado as estado_reserva, 
-                       u.nombres as organizador, rec.tipo as tipo_recurso
+                       u.nombre as organizador, rec.tipo as tipo_recurso
                 FROM eventos e 
                 LEFT JOIN reservas r ON e.id = r.id_evento 
                 LEFT JOIN usuarios u ON e.id_usuario = u.id 
@@ -242,7 +244,7 @@ class Reserva {
         }
 
         if (!empty($filtros['organizador'])) {
-            $sql .= " AND u.nombres LIKE :organizador";
+            $sql .= " AND u.nombre LIKE :organizador";
             $params[':organizador'] = '%' . $filtros['organizador'] . '%';
         }
 
@@ -269,7 +271,7 @@ class Reserva {
     public function obtenerTodasReservas() {
         try {
             $sql = "SELECT e.id, e.titulo, e.descripcion, e.fecha_evento, e.hora_inicio, e.hora_fin, 
-                           e.estado, u.nombres as organizador, 
+                           e.estado, u.nombre as organizador, 
                            COALESCE(rec.tipo, 'Sin recurso') as tipo_recurso
                     FROM eventos e 
                     INNER JOIN usuarios u ON e.id_usuario = u.id 
@@ -296,7 +298,7 @@ class Reserva {
     // Obtener historial de reservas
     public function obtenerHistorialReservas($filtros = []) {
         $sql = "SELECT e.*, r.id as reserva_id, r.estado as estado_reserva, 
-                       u.nombres as organizador, rec.tipo as tipo_recurso
+                       u.nombre as organizador, rec.tipo as tipo_recurso
                 FROM eventos e 
                 LEFT JOIN reservas r ON e.id = r.id_evento 
                 LEFT JOIN usuarios u ON e.id_usuario = u.id 
@@ -347,7 +349,7 @@ class Reserva {
     public function obtenerEventoPorId($id_evento) {
         try {
             $sql = "SELECT e.*, r.id as reserva_id, r.estado as estado_reserva, r.id_recurso,
-                           u.nombres as organizador, rec.tipo as tipo_recurso
+                           u.nombre as organizador, rec.tipo as tipo_recurso
                     FROM eventos e 
                     LEFT JOIN reservas r ON e.id = r.id_evento 
                     LEFT JOIN usuarios u ON e.id_usuario = u.id 
@@ -366,7 +368,7 @@ class Reserva {
         }
 
         try {
-            $sql = "SELECT e.*, u.nombres as organizador
+            $sql = "SELECT e.*, u.nombre as organizador
                     FROM eventos e 
                     LEFT JOIN usuarios u ON e.id_usuario = u.id 
                     WHERE e.id = :id_evento";
@@ -449,37 +451,6 @@ class Reserva {
         // $stmt = $this->conexion->prepare($sql);
         // $stmt->execute();
         // return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Verificar disponibilidad simple usando la tabla eventos
-    public function verificarDisponibilidadSimple($fecha, $hora_inicio, $hora_fin, $id_usuario) {
-        try {
-            $sql = "SELECT COUNT(*) as conflictos 
-                    FROM eventos 
-                    WHERE id_usuario = :id_usuario 
-                    AND fecha_evento = :fecha
-                    AND estado != 'cancelado'
-                    AND (
-                        (hora_inicio BETWEEN :hora_inicio AND :hora_fin)
-                        OR (hora_fin BETWEEN :hora_inicio AND :hora_fin)
-                        OR (:hora_inicio BETWEEN hora_inicio AND hora_fin)
-                        OR (:hora_fin BETWEEN hora_inicio AND hora_fin)
-                    )";
-            
-            $stmt = $this->conexion->prepare($sql);
-            $stmt->bindParam(':id_usuario', $id_usuario);
-            $stmt->bindParam(':fecha', $fecha);
-            $stmt->bindParam(':hora_inicio', $hora_inicio);
-            $stmt->bindParam(':hora_fin', $hora_fin);
-            
-            $stmt->execute();
-            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            return $resultado['conflictos'] == 0;
-        } catch (Exception $e) {
-            // En caso de error, asumir que no está disponible por seguridad
-            return false;
-        }
     }
 }
 

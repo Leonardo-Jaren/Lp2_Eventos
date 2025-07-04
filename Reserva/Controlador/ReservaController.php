@@ -7,7 +7,6 @@ class ReservaController {
     private $reservaModel;
 
     public function __construct() {
-        session_start(); // Asegurar que la sesión esté siempre iniciada
         $this->reservaModel = new Reserva();
     }
 
@@ -50,21 +49,16 @@ class ReservaController {
     public function crearReserva() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
-                // Verificar que el usuario esté autenticado
-                if (!isset($_SESSION['id'])) {
-                    throw new Exception("Usuario no autenticado");
-                }
-                
                 $titulo = $_POST['titulo'] ?? '';
                 $descripcion = $_POST['descripcion'] ?? '';
                 $fecha_evento = $_POST['fecha_evento'] ?? '';
                 $hora_inicio = $_POST['hora_inicio'] ?? '';
                 $hora_fin = $_POST['hora_fin'] ?? '';
-                $id_usuario = $_POST['id_usuario'] ?? $_SESSION['id'] ?? null; // Usar POST como primera opción
+                $id_usuario = $_POST['id_usuario'] ?? '';
                 $id_recurso = !empty($_POST['id_recurso']) ? $_POST['id_recurso'] : null;
 
                 if (empty($titulo) || empty($fecha_evento) || empty($hora_inicio) || empty($hora_fin) || empty($id_usuario)) {
-                    throw new Exception("Todos los campos obligatorios deben ser completados. Usuario: " . ($id_usuario ?? 'no definido'));
+                    throw new Exception("Todos los campos obligatorios deben ser completados");
                 }
 
                 if (strtotime($fecha_evento) < strtotime(date('Y-m-d'))) {
@@ -296,8 +290,7 @@ class ReservaController {
 
     // Mostrar historial de reservas
     public function mostrarHistorial() {
-        // Si no se proporciona id_usuario, usar el de la sesión actual
-        $id_usuario = $_GET['id_usuario'] ?? $_SESSION['id'] ?? null;
+        $id_usuario = $_GET['id_usuario'] ?? null;
         $limite = $_GET['limite'] ?? 50;
 
         $historial = $this->reservaModel->obtenerHistorialReservas($id_usuario, $limite);
@@ -308,8 +301,7 @@ class ReservaController {
     public function mostrarCalendario() {
         $mes = $_GET['mes'] ?? date('n');
         $año = $_GET['año'] ?? date('Y');
-        // Si no se proporciona id_usuario, usar el de la sesión actual
-        $id_usuario = $_GET['id_usuario'] ?? $_SESSION['id'] ?? null;
+        $id_usuario = $_GET['id_usuario'] ?? null;
 
         $eventos = $this->reservaModel->obtenerCalendarioDisponibilidad($mes, $año, $id_usuario);
         $calendario = Calendario::generarCalendarioMes($mes, $año, $eventos);

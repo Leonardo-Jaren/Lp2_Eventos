@@ -33,24 +33,24 @@ require_once 'layouts/header.php';
                         // Obtener información del usuario si no está ya disponible
                         if (!isset($usuario)) {
                             try {
-                                require_once __DIR__ . '/conexion_db.php';
+                                require_once __DIR__ . '/../conexion_db.php';
                                 $conexion = new ConexionDB();
                                 $conn = $conexion->conectar();
-                                $sqlUser = "SELECT u.nombres, u.correo, r.nombre as rol FROM usuarios u 
+                                $sqlUser = "SELECT u.nombre, u.correo, r.nombre as rol FROM usuarios u 
                                            LEFT JOIN roles r ON u.id_rol = r.id 
                                            WHERE u.id = ?";
                                 $stmt = $conn->prepare($sqlUser);
                                 $stmt->execute([$_SESSION['id']]);
                                 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
                             } catch (Exception $e) {
-                                $usuario = ['nombres' => 'Usuario', 'rol' => 'Sistema'];
+                                $usuario = ['nombre' => 'Usuario', 'rol' => 'Sistema'];
                             }
                         }
                         ?>
                         <div class="flex items-center space-x-4 border-l border-blue-500 pl-4">
                             <div class="text-right">
                                 <p class="text-xs text-blue-200">Conectado como:</p>
-                                <p class="font-medium text-white"><?php echo htmlspecialchars($usuario['nombres'] ?? 'Usuario'); ?></p>
+                                <p class="font-medium text-white"><?php echo htmlspecialchars($usuario['nombre'] ?? 'Usuario'); ?></p>
                                 <p class="text-xs text-blue-300"><?php echo htmlspecialchars($usuario['rol'] ?? 'Sistema'); ?></p>
                             </div>
                             <a href="/Lp2_Eventos/Autenticación/Vista/logout.php"
