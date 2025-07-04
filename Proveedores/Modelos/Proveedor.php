@@ -101,25 +101,31 @@ class Proveedor {
         return $resultado;
     }
 
+    /**
+     * Obtiene las reservas asociadas a un proveedor.
+     * Nota: La relación entre servicios_proveedor y reservas/eventos no es directa en el esquema actual.
+     * Esta consulta asume que se buscan eventos creados por el usuario asociado al proveedor,
+     * y muestra los servicios que el proveedor ofrece.
+     */
     public static function obtenerReservasPorProveedor($id_proveedor) {
-        $conn = new ConexionDB();
-        $conexion = $conn->conectar();
-        $sqlSelect = "SELECT 
-                    r.nombre_evento,
-                    r.fecha_evento,
-                    r.lugar,
-                    u.nombre AS nombre_cliente,
-                    cs.nombre_servicio,
-                    ep.estado_participacion
-                FROM evento_proveedores ep
-                JOIN catalogo_servicios cs ON ep.id_servicio = cs.id_servicio
-                JOIN reservas r ON ep.id_reserva = r.id_reserva
-                JOIN usuarios u ON r.id_cliente = u.id_usuario
-                WHERE cs.id_proveedor = '$id_proveedor'
-                ORDER BY r.fecha_evento DESC";
-        $stmt = $conexion->query($sqlSelect);
-        $proveedor_reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $conn->desconectar();
-        return $proveedor_reservas;
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sql = "SELECT 
+                    e.titulo AS nombre_evento,
+                    e.fecha_evento,
+                    u_creador.nombres AS nombre_cliente,
+                    sp.nombre_servicio
+                FROM proveedores p
+                JOIN servicios_proveedor sp ON p.id = sp.id_proveedor
+                JOIN usuarios u_proveedor ON p.id_usuario = u_proveedor.id
+                JOIN eventos e ON u_proveedor.id = e.id_usuario
+                JOIN reservas r ON e.id = r.id_evento
+                JOIN usuarios u_creador ON e.id_usuario = u_creador.id
+                WHERE p.id = :id_proveedor
+                ORDER BY e.fecha_evento DESC";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(':id_proveedor', $id_proveedor, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
