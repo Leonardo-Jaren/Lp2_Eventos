@@ -23,6 +23,12 @@ $usuarios = $usuarioModel->obtenerTodosLosUsuarios();
         <p class="text-purple-100 text-center mt-2">Administra y visualiza todos los usuarios del sistema</p>
     </div>
 
+    <div class="px-6 pt-6">
+        <a href="/Lp2_Eventos/dashboard.php" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">
+            <i class="fas fa-arrow-left mr-2"></i>Atras
+        </a>
+    </div>
+
     <!-- Table Container -->
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <!-- Table Header Info -->

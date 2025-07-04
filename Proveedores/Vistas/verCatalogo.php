@@ -31,7 +31,8 @@ $proveedor->encontrarProveedor($id_proveedor);
             <i class="fas fa-book-open mr-3"></i>
             Catálogo de: <?php echo htmlspecialchars($proveedor->getNombreEmpresa($id_proveedor)); ?>
             </h1>
-            <a href="crearCatalogo.php?id=<?php echo urlencode($id_proveedor); ?>" class="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold py-2 px-4 rounded shadow inline-flex items-center">
+            <a href="crearCatalogo.php?id=<?php echo urlencode($id_proveedor); ?>" 
+                class="bg-white text-indigo-600 hover:bg-indigo-50 font-semibold py-2 px-4 rounded shadow inline-flex items-center">
             <i class="fas fa-plus mr-2"></i>Agregar Servicio
             </a>
         </div>
