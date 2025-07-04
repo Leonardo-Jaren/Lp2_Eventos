@@ -56,33 +56,16 @@ CREATE TABLE eventos (
     FOREIGN KEY (id_organizador) REFERENCES usuarios(id)
 );
 
--- 6. Tabla de solicitudes de servicio
--- 6. Tabla de solicitudes de servicio
-CREATE TABLE solicitudes_servicio (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_evento INT NOT NULL,
-    id_servicio INT NOT NULL,
-    precio_acordado DECIMAL(10,2),
-    fecha_requerida DATE,
-    hora_inicio TIME,
-    hora_fin TIME,
-    estado ENUM('solicitado', 'en_revision', 'aceptado', 'rechazado', 'cancelado') DEFAULT 'solicitado',
-    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
-    fecha_respuesta DATETIME,
-    FOREIGN KEY (id_evento) REFERENCES eventos(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_servicio) REFERENCES servicios(id) ON DELETE CASCADE
-);
-
--- 7. Tabla de contratos
+-- 6. Tabla de contratos
 CREATE TABLE contratos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_solicitud INT UNIQUE NOT NULL,
+    id_evento INT UNIQUE NOT NULL,
     numero_contrato VARCHAR(50) UNIQUE,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE,
     monto_total DECIMAL(10,2) NOT NULL,
     estado ENUM('borrador', 'activo', 'finalizado', 'cancelado') DEFAULT 'borrador',
-    FOREIGN KEY (id_solicitud) REFERENCES solicitudes_servicio(id) ON DELETE CASCADE
+    FOREIGN KEY (id_evento) REFERENCES eventos(id) ON DELETE CASCADE
 );
 
 -- 10. Inserción de roles base

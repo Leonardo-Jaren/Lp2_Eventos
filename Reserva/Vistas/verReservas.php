@@ -26,6 +26,8 @@ if (!empty($buscar)) {
 } else {
     $reservas = $reservaController->mostrar();
 }
+$rol = $usuario['rol'] ?? 'Cliente';
+
 ?>
 
 <div class="container mx-auto px-4 py-8">
@@ -34,11 +36,13 @@ if (!empty($buscar)) {
         <div class="mb-8">
             <div class="flex justify-between items-center">
                 <h1 class="text-3xl font-bold text-gray-900">Gestión de Reservas</h1>
+                <?php if ($rol === 'Cliente'): ?>
                 <a href="crearReserva.php" 
                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200">
                     <i class="fas fa-plus mr-2"></i>
                     Nueva Reserva
                 </a>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -182,17 +186,33 @@ if (!empty($buscar)) {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <div class="flex justify-center space-x-2">
+                                            <?php if ($rol === 'Cliente'): ?>
                                             <a href="editarReserva.php?id=<?php echo $reserva['id']; ?>" 
                                                class="text-blue-600 hover:text-blue-900 transition-colors duration-200" 
                                                title="Editar reserva">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="cancelarReserva.php?id=<?php echo $reserva['id']; ?>" 
+                                            <a href="verReservas.php?id=<?php echo $reserva['id']; ?>" 
                                                class="text-red-600 hover:text-red-900 transition-colors duration-200" 
                                                title="Cancelar reserva"
                                                onclick="return confirm('¿Estás seguro de cancelar esta reserva?')">
                                                 <i class="fas fa-times-circle"></i>
                                             </a>
+                                            <?php endif; ?>
+                                            <?php if ($rol === 'Administrador' || $rol === 'Proveedor'): ?>
+                                            <a href="verReservas.php?aceptar=<?php echo $reserva['id']; ?>" 
+                                                class="text-green-600 hover:text-green-900 transition-colors duration-200" 
+                                                title="Aceptar reserva"
+                                                onclick="return confirm('¿Estás seguro de aceptar esta reserva?')">
+                                                 <i class="fas fa-check-circle"></i>
+                                            </a>
+                                            <a href="verReservas.php?rechazar=<?php echo $reserva['id']; ?>" 
+                                                class="text-yellow-600 hover:text-yellow-900 transition-colors duration-200" 
+                                                title="Rechazar reserva"
+                                                onclick="return confirm('¿Estás seguro de rechazar esta reserva?')">
+                                                 <i class="fas fa-ban"></i>
+                                            </a>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>

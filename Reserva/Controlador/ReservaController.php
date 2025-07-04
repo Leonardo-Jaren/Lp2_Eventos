@@ -11,7 +11,8 @@ class ReservaController{
             $datos["fecha_evento"],
             $datos["hora_inicio"],
             $datos["hora_fin"],
-            $datos["id_usuario"] ?? null // Este será el organizador, puede ser NULL
+            $datos["id_usuario"] ?? null
+            
         );
         if($resultado != 0){
             header("Location: ../Vistas/verReservas.php");

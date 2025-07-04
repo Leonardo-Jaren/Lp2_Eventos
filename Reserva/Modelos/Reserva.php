@@ -1,7 +1,6 @@
 <?php
 
 require_once "../../conexion_db.php";
-
 class Reserva{
     public function mostrar(){
         $conn = new ConexionDB();
@@ -20,10 +19,10 @@ class Reserva{
     }
 
     public function guardar($titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_organizador = null){
+
         // El cliente siempre es quien está logueado
-        session_start();
         $id_cliente = $_SESSION['id'];
-        
+
         // Verificar disponibilidad para el cliente
         if (!$this->verificarDisponibilidad($fecha_evento, $hora_inicio, $hora_fin, $id_cliente)) {
             return 0; // No disponible
@@ -34,7 +33,7 @@ class Reserva{
 
         $sql = "INSERT INTO eventos(titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_cliente, id_organizador, estado) 
                 VALUES ('$titulo', '$descripcion', '$fecha_evento', '$hora_inicio', '$hora_fin', '$id_cliente', " . 
-                ($id_organizador ? "'$id_organizador'" : "NULL") . ", 'confirmado')";
+                ($id_organizador ? "'$id_organizador'" : "NULL") . ", 'borrador')";
         $resultado = $conexion->query($sql);
         $conn->desconectar();
         
