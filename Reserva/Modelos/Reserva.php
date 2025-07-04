@@ -19,16 +19,22 @@ class Reserva{
         return $resultado;
     }
 
-    public function guardar($titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_usuario){
-        // Verificar disponibilidad antes de guardar
-        if (!$this->verificarDisponibilidad($fecha_evento, $hora_inicio, $hora_fin, $id_usuario)) {
+    public function guardar($titulo, $descripcion, $fecha_evento, $hora_inicio, $hora_fin, $id_organizador = null){
+        // El cliente siempre es quien está logueado
+        session_start();
+        $id_cliente = $_SESSION['id'];
+        
+        // Verificar disponibilidad para el cliente
+        if (!$this->verificarDisponibilidad($fecha_evento, $hora_inicio, $hora_fin, $id_cliente)) {
             return 0; // No disponible
         }
 
         $conn = new ConexionDB();
         $conexion = $conn->conectar();
+
         $sql = "INSERT INTO eventos(titulo, descripcion, fecha_evento, hora_inicio, hora_fin, id_cliente, id_organizador, estado) 
-                VALUES ('$titulo', '$descripcion', '$fecha_evento', '$hora_inicio', '$hora_fin', '$id_usuario', '$id_usuario', 'confirmado')";
+                VALUES ('$titulo', '$descripcion', '$fecha_evento', '$hora_inicio', '$hora_fin', '$id_cliente', " . 
+                ($id_organizador ? "'$id_organizador'" : "NULL") . ", 'confirmado')";
         $resultado = $conexion->query($sql);
         $conn->desconectar();
         
@@ -208,6 +214,9 @@ class Reserva{
         }
         if (!empty($filtros['id_usuario'])) {
             $sql .= " AND e.id_cliente = '" . $filtros['id_usuario'] . "'";
+        }
+        if (!empty($filtros['buscar'])) {
+            $sql .= " AND (e.titulo LIKE '%" . $filtros['buscar'] . "%' OR e.descripcion LIKE '%" . $filtros['buscar'] . "%')";
         }
         
         $sql .= " ORDER BY e.fecha_evento DESC, e.hora_inicio DESC";
