@@ -163,31 +163,81 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             </div>
                                         </div>
                                     <?php else: ?>
-                                        <!-- Select normal cuando no viene de un proveedor específico -->
-                                        <select name="id_proveedor" id="proveedor_id" 
-                                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white appearance-none" required>
-                                            <option value="">Seleccionar Proveedor...</option>
-                                            <?php if (!empty($proveedores)): ?>
-                                                <?php foreach ($proveedores as $proveedor): ?>
-                                                    <option value="<?php echo $proveedor['id']; ?>">
-                                                        <?php echo htmlspecialchars($proveedor['nombre']); ?> 
-                                                        <?php if (!empty($proveedor['empresa'])): ?>
-                                                            - <?php echo htmlspecialchars($proveedor['empresa']); ?>
-                                                        <?php endif; ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            <?php else: ?>
-                                                <option value="" disabled>No hay proveedores disponibles</option>
+                                        <!-- Campo oculto con el ID del proveedor de la sesión actual (para usuarios con rol Proveedor) -->
+                                        <?php
+                                        // Verificar si el usuario actual tiene rol de Proveedor y obtener su proveedor
+                                        require_once '../../conexion_db.php';
+                                        $conexionDB = new ConexionDB();
+                                        $conn = $conexionDB->conectar();
+                                        
+                                        $sqlUserRole = "SELECT u.id_rol, r.nombre as rol FROM usuarios u 
+                                                       LEFT JOIN roles r ON u.id_rol = r.id 
+                                                       WHERE u.id = ?";
+                                        $stmtRole = $conn->prepare($sqlUserRole);
+                                        $stmtRole->execute([$_SESSION['id']]);
+                                        $userRole = $stmtRole->fetch(PDO::FETCH_ASSOC);
+                                        
+                                        $proveedorActual = null;
+                                        if ($userRole && $userRole['rol'] === 'Proveedor') {
+                                            $sqlProveedor = "SELECT * FROM proveedores WHERE id_usuario = ?";
+                                            $stmtProveedor = $conn->prepare($sqlProveedor);
+                                            $stmtProveedor->execute([$_SESSION['id']]);
+                                            $proveedorActual = $stmtProveedor->fetch(PDO::FETCH_ASSOC);
+                                        }
+                                        $conexionDB->desconectar();
+                                        ?>
+                                        
+                                        <?php if ($proveedorActual): ?>
+                                            <!-- Usuario Proveedor: usar su proveedor automáticamente -->
+                                            <input type="hidden" name="id_proveedor" value="<?php echo $proveedorActual['id']; ?>">
+                                            <div class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm bg-green-50 border-green-200">
+                                                <div class="flex items-center">
+                                                    <div class="bg-green-100 p-2 rounded-full mr-3">
+                                                        <i class="fas fa-building text-green-600 text-sm"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-semibold text-gray-800"><?php echo htmlspecialchars($proveedorActual['nombre_empresa']); ?></div>
+                                                        <div class="text-sm text-gray-600">Tu empresa</div>
+                                                    </div>
+                                                    <div class="ml-auto">
+                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            <i class="fas fa-check mr-1"></i>
+                                                            Tu perfil
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <!-- Administrador o Cliente: mostrar selector -->
+                                            <select name="id_proveedor" id="proveedor_id" 
+                                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white appearance-none" required>
+                                                <option value="">Seleccionar Proveedor...</option>
+                                                <?php if (!empty($proveedores)): ?>
+                                                    <?php foreach ($proveedores as $proveedor): ?>
+                                                        <option value="<?php echo $proveedor['id']; ?>">
+                                                            <?php echo htmlspecialchars($proveedor['nombre_empresa']); ?> 
+                                                            <?php if (!empty($proveedor['telefono'])): ?>
+                                                                - <?php echo htmlspecialchars($proveedor['telefono']); ?>
+                                                            <?php endif; ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <option value="" disabled>No hay proveedores disponibles</option>
+                                                <?php endif; ?>
+                                            </select>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (!$proveedorActual): ?>
+                                            <!-- Solo mostrar estos elementos cuando hay un selector -->
+                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-chevron-down text-gray-400"></i>
+                                            </div>
+                                            <?php if (empty($proveedores)): ?>
+                                                <p class="mt-2 text-xs text-amber-600 flex items-center">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                    <a href="crearProveedor.php" class="underline hover:text-amber-800">Crear un proveedor primero</a>
+                                                </p>
                                             <?php endif; ?>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-chevron-down text-gray-400"></i>
-                                        </div>
-                                        <?php if (empty($proveedores)): ?>
-                                            <p class="mt-2 text-xs text-amber-600 flex items-center">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                <a href="crearProveedor.php" class="underline hover:text-amber-800">Crear un proveedor primero</a>
-                                            </p>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
@@ -196,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     <!-- Botones de acción mejorados -->
                     <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
-                        <a href="<?php echo $id_proveedor_seleccionado ? 'verCatalogo.php?id=' . $id_proveedor_seleccionado : 'verCatalogo.php'; ?>" 
+                        <a href="<?php echo $id_proveedor_seleccionado ? 'verProveedor.php?id=' . $id_proveedor_seleccionado : 'verProveedor.php'; ?>" 
                            class="inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-100 transition-all duration-200">
                             <i class="fas fa-times mr-2"></i>
                             Cancelar
