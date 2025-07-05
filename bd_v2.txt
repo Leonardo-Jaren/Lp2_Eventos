@@ -56,18 +56,15 @@ CREATE TABLE eventos (
     FOREIGN KEY (id_organizador) REFERENCES usuarios(id)
 );
 
--- 6. Tabla de contratos
-CREATE TABLE contratos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_evento INT UNIQUE NOT NULL,
-    numero_contrato VARCHAR(50) UNIQUE,
-    fecha_inicio DATE NOT NULL,
-    fecha_fin DATE,
-    monto_total DECIMAL(10,2) NOT NULL,
-    estado ENUM('borrador', 'activo', 'finalizado', 'cancelado') DEFAULT 'borrador',
-    FOREIGN KEY (id_evento) REFERENCES eventos(id) ON DELETE CASCADE
-);
+-- 1. Eliminar la columna actual y su clave foránea
+ALTER TABLE solicitudes_servicio
+DROP FOREIGN KEY solicitudes_servicio_ibfk_2,  -- nombre de la FK puede variar
+DROP COLUMN id_servicio;
 
+-- 2. Agregar la nueva columna con la FK al proveedor
+ALTER TABLE solicitudes_servicio
+ADD COLUMN id_proveedor INT NOT NULL,
+ADD FOREIGN KEY (id_proveedor) REFERENCES proveedores(id) ON DELETE CASCADE;
 -- 10. Inserción de roles base
 INSERT INTO roles (nombre) VALUES
 ('Cliente'),
@@ -81,6 +78,4 @@ CREATE INDEX idx_usuarios_rol ON usuarios(id_rol);
 CREATE INDEX idx_eventos_fecha ON eventos(fecha_evento);
 CREATE INDEX idx_eventos_cliente ON eventos(id_cliente);
 CREATE INDEX idx_servicios_proveedor ON servicios(id_proveedor);
-CREATE INDEX idx_solicitudes_evento ON solicitudes_servicio(id_evento);
-CREATE INDEX idx_solicitudes_servicio ON solicitudes_servicio(id_servicio);
 CREATE INDEX idx_contratos_solicitud ON contratos(id_solicitud);

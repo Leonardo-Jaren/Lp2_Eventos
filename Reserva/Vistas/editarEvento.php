@@ -8,9 +8,9 @@ if (!isset($_SESSION['id'])) {
 
 // Procesamiento del formulario de edición
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_evento'])) {
-    require_once '../Controlador/ReservaController.php';
-    
-    $reservaController = new ReservaController();
+    require_once '../Controlador/EventoController.php';
+
+    $reservaController = new EventoController();
     $datos = [
         'id' => $_POST['id_evento'],
         'titulo' => $_POST['titulo'],
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_evento'])) {
     ];
     
     if ($datos['id'] && $datos['titulo'] && $datos['fecha_evento'] && $datos['hora_inicio'] && $datos['hora_fin']) {
-        $resultado = $reservaController->actualizar($datos);
+        $resultado = $reservaController->actualizarEvento($datos);
         // El controlador ya maneja la redirección
     } else {
         $_SESSION['mensaje'] = 'Todos los campos son obligatorios';
@@ -43,7 +43,7 @@ if (!isset($evento) || !$evento) {
         require_once '../Modelos/Reserva.php';
         
         try {
-            $reservaModel = new Reserva();
+            $reservaModel = new Evento();
             $evento = $reservaModel->obtenerEventoPorId($id_evento);
         } catch (Exception $e) {
             $evento = null;
@@ -57,8 +57,8 @@ if (!isset($evento) || !$evento) {
                 <div class="flex items-center">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
                     <span>Evento no encontrado.</span>
-                    <a href="verReservas.php" class="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors duration-200">
-                        Volver a Reservas
+                    <a href="verEventos.php" class="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors duration-200">
+                        Volver a Eventos
                     </a>
                 </div>
             </div>
@@ -88,13 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $verificacion_tipo = 'warning';
         } else {
             try {
-                $reservaModel = new Reserva();
-                $disponible = $reservaModel->verificarDisponibilidad($fecha, $hora_inicio, $hora_fin, $evento['id_usuario'], $id_evento_actual);
+                $eventoModel = new Evento();
+                $disponible = $eventoModel->verificarDisponibilidadEvento($fecha, $hora_inicio, $hora_fin, $evento['id_usuario'], $id_evento_actual);
                 if ($disponible) {
-                    $verificacion_resultado = 'Horario disponible. Puede proceder a actualizar la reserva.';
+                    $verificacion_resultado = 'Horario disponible. Puede proceder a actualizar el evento.';
                     $verificacion_tipo = 'success';
                 } else {
-                    $verificacion_resultado = 'Horario no disponible. Ya existe otra reserva en este período.';
+                    $verificacion_resultado = 'Horario no disponible. Ya existe otro evento en este período.';
                     $verificacion_tipo = 'error';
                 }
             } catch (Exception $e) {
@@ -181,17 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
 
-                    <!-- <div>
-                        <label for="id_recurso" class="block text-sm font-medium text-gray-700 mb-2">Recurso</label>
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" 
-                                id="id_recurso" name="id_recurso">
-                            <option value="">Sin recurso específico</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">
-                            Recurso actual: <?php echo $evento['tipo_recurso'] ? htmlspecialchars($evento['tipo_recurso']) : 'Sin recurso'; ?>
-                        </p>
-                    </div> -->
-
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <h3 class="text-lg font-medium text-gray-900 mb-3 flex items-center">
                             <i class="fas fa-clock text-yellow-600 mr-2"></i>
@@ -239,9 +228,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <button type="submit" class="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors duration-200 flex items-center justify-center"
                                 <?php echo ($verificacion_resultado && $verificacion_tipo !== 'success') ? 'disabled' : ''; ?>>
                             <i class="fas fa-save mr-2"></i>
-                            Actualizar Reserva
+                            Actualizar Evento
                         </button>
-                        <a href="verReservas.php" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 text-center flex items-center justify-center">
+                        <a href="verEventos.php" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 text-center flex items-center justify-center">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Cancelar
                         </a>

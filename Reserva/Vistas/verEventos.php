@@ -8,24 +8,46 @@ if (!isset($_SESSION['id'])) {
 $titulo_pagina = "Ver Reservas";
 require_once '../../nav.php';
 
-require_once '../Controlador/ReservaController.php';
+require_once '../Controlador/EventoController.php';
+
+$reservaController = new EventoController();
+
+if (isset($_GET['aceptar']) && !empty($_GET['aceptar'])) {
+    $reservaController->aceptarEvento($_GET['aceptar']);
+}
+
+if (isset($_GET['rechazar']) && !empty($_GET['rechazar'])) {
+    $reservaController->rechazarEvento($_GET['rechazar']);
+}
+
+if (isset($_GET['id']) && !empty($_GET['id'])) {
+    $reservaController->eliminarEvento($_GET['id']);
+}
 
 $mensaje = $_SESSION['mensaje'] ?? '';
 $tipo_mensaje = $_SESSION['tipo_mensaje'] ?? '';
 unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
 
-// Procesar búsqueda
 $buscar = $_GET['buscar'] ?? '';
 
-$reservaController = new ReservaController();
+$id_usuario_sesion = $_SESSION['id'];
+$rol = $usuario['rol'] ?? 'Cliente';
 
-// Aplicar búsqueda si existe
 if (!empty($buscar)) {
-    $filtros = ['buscar' => $buscar];
+    $filtros = [
+        'buscar' => $buscar,
+        'id_usuario' => $id_usuario_sesion,
+        'rol_usuario' => $rol
+    ];
     $reservas = $reservaController->obtenerConFiltros($filtros);
 } else {
-    $reservas = $reservaController->mostrar();
+    if ($rol === 'Proveedor') {
+        $reservas = $reservaController->obtenerEventosProveedor($id_usuario_sesion);
+    } else {
+        $reservas = $reservaController->obtenerPorUsuario($id_usuario_sesion);
+    }
 }
+
 $rol = $usuario['rol'] ?? 'Cliente';
 
 ?>
@@ -35,14 +57,7 @@ $rol = $usuario['rol'] ?? 'Cliente';
         <!-- Encabezado -->
         <div class="mb-8">
             <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-gray-900">Gestión de Reservas</h1>
-                <?php if ($rol === 'Cliente'): ?>
-                <a href="crearReserva.php" 
-                   class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200">
-                    <i class="fas fa-plus mr-2"></i>
-                    Nueva Reserva
-                </a>
-                <?php endif; ?>
+                <h1 class="text-3xl font-bold text-gray-900">Gestión de Eventos</h1>
             </div>
         </div>
 
@@ -65,7 +80,7 @@ $rol = $usuario['rol'] ?? 'Cliente';
                     <i class="fas fa-search"></i>
                 </button>
                 <?php if (!empty($buscar)): ?>
-                    <a href="verReservas.php" 
+                    <a href="verEventos.php" 
                        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors duration-200">
                         <i class="fas fa-times"></i>
                     </a>
@@ -175,6 +190,9 @@ $rol = $usuario['rol'] ?? 'Cliente';
                                             case 'pendiente':
                                                 $estado_class = 'bg-yellow-100 text-yellow-800';
                                                 break;
+                                            case 'borrador':
+                                                $estado_class = 'bg-blue-100 text-blue-800';
+                                                break;
                                             case 'cancelado':
                                                 $estado_class = 'bg-red-100 text-red-800';
                                                 break;
@@ -186,32 +204,38 @@ $rol = $usuario['rol'] ?? 'Cliente';
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <div class="flex justify-center space-x-2">
-                                            <?php if ($rol === 'Cliente'): ?>
-                                            <a href="editarReserva.php?id=<?php echo $reserva['id']; ?>" 
+                                            <?php if ($rol === 'Cliente' && ($reserva['estado'] === 'borrador' || $reserva['estado'] === 'pendiente')): ?>
+                                            <a href="editarEvento.php?id=<?php echo $reserva['id']; ?>" 
                                                class="text-blue-600 hover:text-blue-900 transition-colors duration-200" 
                                                title="Editar reserva">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="verReservas.php?id=<?php echo $reserva['id']; ?>" 
+                                            <a href="verEventos.php?id=<?php echo $reserva['id']; ?>" 
                                                class="text-red-600 hover:text-red-900 transition-colors duration-200" 
                                                title="Cancelar reserva"
                                                onclick="return confirm('¿Estás seguro de cancelar esta reserva?')">
                                                 <i class="fas fa-times-circle"></i>
                                             </a>
                                             <?php endif; ?>
-                                            <?php if ($rol === 'Administrador' || $rol === 'Proveedor'): ?>
-                                            <a href="verReservas.php?aceptar=<?php echo $reserva['id']; ?>" 
+                                            
+                                            <?php if (($rol === 'Administrador' || $rol === 'Proveedor') && $reserva['estado'] === 'borrador'): ?>
+                                            <a href="verEventos.php?aceptar=<?php echo $reserva['id']; ?>" 
                                                 class="text-green-600 hover:text-green-900 transition-colors duration-200" 
                                                 title="Aceptar reserva"
                                                 onclick="return confirm('¿Estás seguro de aceptar esta reserva?')">
                                                  <i class="fas fa-check-circle"></i>
                                             </a>
-                                            <a href="verReservas.php?rechazar=<?php echo $reserva['id']; ?>" 
+                                            <a href="verEventos.php?rechazar=<?php echo $reserva['id']; ?>" 
                                                 class="text-yellow-600 hover:text-yellow-900 transition-colors duration-200" 
                                                 title="Rechazar reserva"
                                                 onclick="return confirm('¿Estás seguro de rechazar esta reserva?')">
                                                  <i class="fas fa-ban"></i>
                                             </a>
+                                            <?php endif; ?>
+                                            <?php if ($reserva['estado'] === 'confirmado' || $reserva['estado'] === 'cancelado'): ?>
+                                            <span class="text-gray-400" title="No hay acciones disponibles">
+                                                <i class="fas fa-lock"></i>
+                                            </span>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -236,5 +260,106 @@ $rol = $usuario['rol'] ?? 'Cliente';
         </div>
     </div>
 </div>
+
+<!-- Modal para crear contrato -->
+<div id="modalCrearContrato" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Crear Contrato</h3>
+                <button onclick="cerrarModalContrato()" 
+                        class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="formCrearContrato" method="POST" action="../../Contrato/Vistas/verContrato.php">
+                <input type="hidden" id="evento_id" name="id_evento">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Evento</label>
+                    <p id="evento_titulo" class="text-gray-900 bg-gray-50 p-2 rounded"></p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="fecha_inicio_modal" class="block text-sm font-medium text-gray-700 mb-2">Fecha de Inicio</label>
+                    <input type="date" name="fecha_inicio" id="fecha_inicio_modal" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="fecha_fin_modal" class="block text-sm font-medium text-gray-700 mb-2">Fecha de Fin</label>
+                    <input type="date" name="fecha_fin" id="fecha_fin_modal" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-6">
+                    <label for="monto_total_modal" class="block text-sm font-medium text-gray-700 mb-2">Monto Total</label>
+                    <input type="number" name="monto_total" id="monto_total_modal" step="0.01" min="0" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="0.00">
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" 
+                            onclick="cerrarModalContrato()"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200">
+                        Crear Contrato
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function abrirModalContrato(eventoId, eventoTitulo) {
+    document.getElementById('evento_id').value = eventoId;
+    document.getElementById('evento_titulo').textContent = eventoTitulo;
+    
+    // Establecer fecha de inicio como hoy
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('fecha_inicio_modal').value = hoy;
+    document.getElementById('fecha_inicio_modal').min = hoy;
+    
+    // Limpiar otros campos
+    document.getElementById('fecha_fin_modal').value = '';
+    document.getElementById('monto_total_modal').value = '';
+    
+    document.getElementById('modalCrearContrato').classList.remove('hidden');
+}
+
+function cerrarModalContrato() {
+    document.getElementById('modalCrearContrato').classList.add('hidden');
+}
+
+// Validación de fechas en el modal
+document.getElementById('fecha_inicio_modal').addEventListener('change', function() {
+    const fechaInicio = new Date(this.value);
+    const fechaFinInput = document.getElementById('fecha_fin_modal');
+    
+    // Establecer fecha mínima para fecha fin (1 día después de inicio)
+    const fechaMinimaFin = new Date(fechaInicio);
+    fechaMinimaFin.setDate(fechaMinimaFin.getDate() + 1);
+    fechaFinInput.min = fechaMinimaFin.toISOString().split('T')[0];
+    
+    // Si fecha fin es anterior a la nueva fecha inicio, limpiarla
+    if (fechaFinInput.value && new Date(fechaFinInput.value) <= fechaInicio) {
+        fechaFinInput.value = '';
+    }
+});
+
+// Cerrar modal al hacer clic fuera de él
+window.onclick = function(event) {
+    const modal = document.getElementById('modalCrearContrato');
+    if (event.target == modal) {
+        cerrarModalContrato();
+    }
+}
+</script>
 
 <?php require_once '../../layouts/footer.php'; ?>

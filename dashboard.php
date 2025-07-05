@@ -85,12 +85,12 @@ require_once 'nav.php';
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Reservas</h3>
-                        <p class="text-gray-600">Gestionar reservas de eventos</p>
+                        <h3 class="text-lg font-semibold text-gray-900">Eventos</h3>
+                        <p class="text-gray-600">Gestionar eventos</p>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="Reserva/Vistas/verReservas.php" class="text-green-600 hover:text-green-800">Ver todas →</a>
+                    <a href="Reserva/Vistas/verEventos.php" class="text-green-600 hover:text-green-800">Ver todos →</a>
                 </div>
             </div>
 

@@ -149,6 +149,13 @@ $rol = $usuario['rol'] ?? 'Cliente';
                                             title="Ver Catálogo">
                                             <i class="fas fa-book-open text-xs"></i>
                                         </a>
+                                        <?php if ($rol === 'Cliente'): ?>
+                                        <a href="../../Reserva/Vistas/crearEvento.php?id_proveedor=<?php echo $proveedor['id']; ?>"
+                                            class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
+                                            title="Crear Evento">
+                                            <i class="fas fa-calendar-plus text-xs"></i>
+                                        </a>
+                                        <?php endif; ?>
                                         <?php if ($rol === 'Administrador'): ?>
                                             <a href="editarProveedor.php?id=<?php echo $proveedor['id']; ?>"
                                                 class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
