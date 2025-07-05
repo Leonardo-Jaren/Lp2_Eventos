@@ -56,10 +56,10 @@ $titulo_pagina = $titulo_pagina ?? 'Plannea - Sistema para Gestión de Eventos';
                     <a href="/Lp2_Eventos/dashboard.php" class="hover:bg-blue-700 px-3 py-2 rounded transition duration-200">
                         <i class="fas fa-home mr-1"></i> Inicio
                     </a>
-                    <a href="/Lp2_Eventos/Reserva/Vistas/verReservas.php" class="hover:bg-blue-700 px-3 py-2 rounded transition duration-200">
-                        <i class="fas fa-calendar mr-1"></i> Reservas
+                    <a href="/Lp2_Eventos/Reserva/Vistas/verEventos.php" class="hover:bg-blue-700 px-3 py-2 rounded transition duration-200">
+                        <i class="fas fa-calendar mr-1"></i> Eventos
                     </a>
-                    <a href="/Lp2_Eventos/Reserva/Vistas/historialReservas.php" class="hover:bg-blue-700 px-3 py-2 rounded transition duration-200">
+                    <a href="/Lp2_Eventos/Reserva/Vistas/historialEventos.php" class="hover:bg-blue-700 px-3 py-2 rounded transition duration-200">
                         <i class="fas fa-history mr-1"></i> Historial
                     </a>
                 </div>

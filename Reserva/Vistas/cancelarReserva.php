@@ -8,14 +8,14 @@ if (!isset($_SESSION['id'])) {
 
 // Procesamiento del formulario de cancelación
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_evento'])) {
-    require_once '../Controlador/ReservaController.php';
-    
-    $reservaController = new ReservaController();
+    require_once '../Controlador/EventoController.php';
+
+    $eventoController = new EventoController();
     $id_evento = $_POST['id_evento'];
     $motivo = $_POST['motivo_cancelacion'] ?? '';
     
     if ($id_evento) {
-        $resultado = $reservaController->eliminar($id_evento);
+        $resultado = $eventoController->eliminarEvento($id_evento);
         // El controlador ya maneja la redirección
     } else {
         $_SESSION['mensaje'] = 'ID de evento no válido';
@@ -37,8 +37,8 @@ $id_evento = $_GET['id'] ?? '';
 $evento = null;
 if ($id_evento) {
     try {
-        $reservaModel = new Reserva();
-        $evento = $reservaModel->obtenerEventoPorId($id_evento);
+        $eventoModel = new Evento();
+        $evento = $eventoModel->obtenerEventoPorId($id_evento);
     } catch (Exception $e) {
         $evento = null;
     }
