@@ -12,6 +12,10 @@ class ProveedorController {
             $id_usuario = (int)$datos['id_usuario'];
         }
         
+        if ($id_usuario && $proveedor->existeProveedorParaUsuario($id_usuario)) {
+            return 'Ya existe un proveedor registrado para este usuario. Un usuario solo puede tener un proveedor asociado.';
+        }
+        
         $resultado = $proveedor->guardarProveedor(
             $datos['nombre_empresa'],
             $datos['telefono'],

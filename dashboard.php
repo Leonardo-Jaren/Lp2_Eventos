@@ -30,6 +30,40 @@ require_once 'layouts/header.php';
 require_once 'nav.php';
 ?>
 
+<style>
+    /* Estilos personalizados para el dashboard */
+    .cards-container-two {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        max-width: 56rem; /* max-w-4xl */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .cards-container-normal {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Para pantallas más pequeñas, asegurar que las tarjetas se apilen */
+    @media (max-width: 640px) {
+        .cards-container-two,
+        .cards-container-normal {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+
+<?php
+?>
+
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Mensaje de Bienvenida -->
@@ -55,10 +89,19 @@ require_once 'nav.php';
         </div>
 
         <!-- Tarjetas de Navegación -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <?php
+        // Contar tarjetas visibles
+        $tarjetasVisibles = 2; // Eventos y Proveedores siempre visibles
+        if ($rol === 'Administrador') $tarjetasVisibles++;
+        if ($rol === 'Proveedor') $tarjetasVisibles++;
+        
+        // Determinar clases CSS según el número de tarjetas
+        $containerClasses = ($tarjetasVisibles === 2) ? 'cards-container-two' : 'cards-container-normal';
+        ?>
+        <div class="<?php echo $containerClasses; ?>">
             <?php if ($rol === 'Administrador'): ?>
             <!-- Usuarios -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
                 <div class="flex items-center">
                     <div class="p-3 bg-blue-100 rounded-full">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +120,7 @@ require_once 'nav.php';
             <?php endif; ?>
 
             <!-- Reservas -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
                 <div class="flex items-center">
                     <div class="p-3 bg-green-100 rounded-full">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,17 +128,17 @@ require_once 'nav.php';
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Reservas</h3>
-                        <p class="text-gray-600">Gestionar reservas de eventos</p>
+                        <h3 class="text-lg font-semibold text-gray-900">Eventos</h3>
+                        <p class="text-gray-600">Gestionar eventos</p>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="Reserva/Vistas/verReservas.php" class="text-green-600 hover:text-green-800">Ver todas →</a>
+                    <a href="Reserva/Vistas/verEventos.php" class="text-green-600 hover:text-green-800">Ver todos →</a>
                 </div>
             </div>
 
             <!-- Proveedores -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
                 <div class="flex items-center">
                     <div class="p-3 bg-purple-100 rounded-full">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,6 +154,26 @@ require_once 'nav.php';
                     <a href="Proveedores/Vistas/verProveedor.php" class="text-purple-600 hover:text-purple-800">Ver todos →</a>
                 </div>
             </div>
+
+            <!-- Perfil Proveedor -->
+            <?php if ($rol === 'Proveedor'): ?>
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-full">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Mi Empresa</h3>
+                        <p class="text-gray-600">Ver y editar tu perfil de empresa</p>
+                    </div>
+                </div>
+                    <div class="mt-4">
+                        <a href="Proveedores/Vistas/Perfil/verPerfilProveedor.php" class="text-yellow-600 hover:text-yellow-800">Ir al perfil →</a>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- Estadísticas Rápidas -->
@@ -144,4 +207,7 @@ require_once 'nav.php';
     </div>
 </div>
 
-<?php $conexion->desconectar(); ?>
+<?php 
+require_once 'layouts/footer.php';
+$conexion->desconectar(); 
+?>
