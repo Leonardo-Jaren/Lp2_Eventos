@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_SESSION['id'])) {
     header("Location: Autenticación/Vista/login.php");
     exit();
@@ -11,7 +10,6 @@ require_once 'conexion_db.php';
 $conexion = new ConexionDB();
 $conn = $conexion->conectar();
 
-// Verificar que el usuario existe y obtener sus datos
 $sqlUser = "SELECT u.nombres, u.correo, r.nombre as rol FROM usuarios u 
             LEFT JOIN roles r ON u.id_rol = r.id 
             WHERE u.id = ?";
@@ -19,9 +17,9 @@ $stmt = $conn->prepare($sqlUser);
 $stmt->execute([$_SESSION['id']]);
 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Verificar si se encontró el usuario
+$rol = $usuario['rol'] ?? 'Cliente';
+
 if (!$usuario) {
-    // Si no se encuentra el usuario, destruir la sesión y redirigir
     session_destroy();
     header("Location: Autenticación/Vista/login.php");
     exit();
@@ -32,31 +30,41 @@ require_once 'layouts/header.php';
 require_once 'nav.php';
 ?>
 
-<div class="min-h-screen bg-gray-50">
-    <!-- Banner de Dashboard -->
-    <div class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Sistema para Gestión de Eventos</h1>
-                    <p class="text-gray-600">Panel de control del sistema de eventos</p>
-                </div>
-                <div class="hidden md:flex items-center space-x-4">
-                    <div class="bg-blue-50 rounded-lg px-4 py-2">
-                        <p class="text-sm text-blue-600 font-medium">
-                            <i class="fas fa-calendar-check mr-1"></i>
-                            Sistema activo
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Fecha actual:</p>
-                        <p class="font-medium text-gray-900"><?php echo date('d/m/Y'); ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<style>
+    /* Estilos personalizados para el dashboard */
+    .cards-container-two {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        max-width: 56rem; /* max-w-4xl */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .cards-container-normal {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Para pantallas más pequeñas, asegurar que las tarjetas se apilen */
+    @media (max-width: 640px) {
+        .cards-container-two,
+        .cards-container-normal {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
 
+<?php
+?>
+
+<div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Mensaje de Bienvenida -->
         <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 mb-8">
@@ -81,9 +89,19 @@ require_once 'nav.php';
         </div>
 
         <!-- Tarjetas de Navegación -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <?php
+        // Contar tarjetas visibles
+        $tarjetasVisibles = 2; // Eventos y Proveedores siempre visibles
+        if ($rol === 'Administrador') $tarjetasVisibles++;
+        if ($rol === 'Proveedor') $tarjetasVisibles++;
+        
+        // Determinar clases CSS según el número de tarjetas
+        $containerClasses = ($tarjetasVisibles === 2) ? 'cards-container-two' : 'cards-container-normal';
+        ?>
+        <div class="<?php echo $containerClasses; ?>">
+            <?php if ($rol === 'Administrador'): ?>
             <!-- Usuarios -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
                 <div class="flex items-center">
                     <div class="p-3 bg-blue-100 rounded-full">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,9 +117,10 @@ require_once 'nav.php';
                     <a href="Usuarios/Vistas/verUsuarios.php" class="text-blue-600 hover:text-blue-800">Ver todos →</a>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Reservas -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
                 <div class="flex items-center">
                     <div class="p-3 bg-green-100 rounded-full">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,17 +128,17 @@ require_once 'nav.php';
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Reservas</h3>
-                        <p class="text-gray-600">Gestionar reservas de eventos</p>
+                        <h3 class="text-lg font-semibold text-gray-900">Eventos</h3>
+                        <p class="text-gray-600">Gestionar eventos</p>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="Reserva/Vistas/verReservas.php" class="text-green-600 hover:text-green-800">Ver todas →</a>
+                    <a href="Reserva/Vistas/verEventos.php" class="text-green-600 hover:text-green-800">Ver todos →</a>
                 </div>
             </div>
 
             <!-- Proveedores -->
-            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
                 <div class="flex items-center">
                     <div class="p-3 bg-purple-100 rounded-full">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,12 +154,32 @@ require_once 'nav.php';
                     <a href="Proveedores/Vistas/verProveedor.php" class="text-purple-600 hover:text-purple-800">Ver todos →</a>
                 </div>
             </div>
+
+            <!-- Perfil Proveedor -->
+            <?php if ($rol === 'Proveedor'): ?>
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 w-full sm:w-80 lg:flex-1 lg:max-w-sm">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-full">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Mi Empresa</h3>
+                        <p class="text-gray-600">Ver y editar tu perfil de empresa</p>
+                    </div>
+                </div>
+                    <div class="mt-4">
+                        <a href="Proveedores/Vistas/Perfil/verPerfilProveedor.php" class="text-yellow-600 hover:text-yellow-800">Ir al perfil →</a>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- Estadísticas Rápidas -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Estadísticas del Sistema</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <?php
                 // Obtener estadísticas
                 $stats = [];
@@ -149,38 +188,26 @@ require_once 'nav.php';
                 $result = $conn->query("SELECT COUNT(*) as total FROM usuarios");
                 $stats['usuarios'] = $result->fetch()['total'];
 
-                // Total reservas
-                $result = $conn->query("SELECT COUNT(*) as total FROM reservas");
-                $stats['reservas'] = $result->fetch()['total'] ?? 0;
-
                 // Total proveedores
                 $result = $conn->query("SELECT COUNT(*) as total FROM proveedores");
                 $stats['proveedores'] = $result->fetch()['total'] ?? 0;
-
-                // Total recursos
-                $result = $conn->query("SELECT COUNT(*) as total FROM recursos");
-                $stats['recursos'] = $result->fetch()['total'] ?? 0;
                 ?>
 
-                <div class="text-center">
+                <div class="flex flex-col items-center justify-center w-full">
                     <div class="text-3xl font-bold text-blue-600"><?php echo $stats['usuarios']; ?></div>
                     <div class="text-sm text-gray-600">Usuarios</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-green-600"><?php echo $stats['reservas']; ?></div>
-                    <div class="text-sm text-gray-600">Reservas</div>
-                </div>
-                <div class="text-center">
+                
+                <div class="flex flex-col items-center justify-center w-full">
                     <div class="text-3xl font-bold text-purple-600"><?php echo $stats['proveedores']; ?></div>
                     <div class="text-sm text-gray-600">Proveedores</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-orange-600"><?php echo $stats['recursos']; ?></div>
-                    <div class="text-sm text-gray-600">Recursos</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<?php $conexion->desconectar(); ?>
+<?php 
+require_once 'layouts/footer.php';
+$conexion->desconectar(); 
+?>

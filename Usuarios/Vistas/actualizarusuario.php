@@ -59,7 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ?>
                 </select>
             </div>
-            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Actualizar</button>
+            <div class="flex space-x-2">
+                <a href="verUsuarios.php" class="w-full bg-gray-400 text-white p-2 rounded-md text-center hover:bg-gray-500">Cancelar</a>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Actualizar</button>
+            </div>
         </form>
         <?php else: ?>
             <div class="text-red-600">Usuario no encontrado.</div>

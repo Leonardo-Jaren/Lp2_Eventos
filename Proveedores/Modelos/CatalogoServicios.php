@@ -6,77 +6,76 @@ require_once '../../conexion_db.php'; // Asegúrate de que la ruta sea correcta.
  * Para mayor seguridad en un entorno real, se deben usar consultas preparadas.
  */
 class CatalogoServicios {
-
-    /**
-     * Obtiene todos los servicios de un proveedor específico.
-     */
-    public static function obtenerPorProveedor($id_proveedor) {
+    public function obtenerTodosLosServicios() {
         $db = new ConexionDB();
-        $conn = $db->conectar();
-        
-        $sql = "SELECT * FROM servicios_proveedor WHERE id_proveedor = '$id_proveedor' ORDER BY nombre_servicio";
-        
-        $stmt = $conn->query($sql);
+        $conexion = $db->conectar();
+        $sqlSelect = "SELECT * FROM servicios ORDER BY nombre_servicio";
+        $stmt = $conexion->query($sqlSelect);
+        $db->desconectar();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function buscarPorProveedor($id_proveedor) {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sqlSelect = "SELECT * FROM servicios WHERE id_proveedor = '$id_proveedor' ORDER BY nombre_servicio";
+        $stmt = $conexion->query($sqlSelect);
+        $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
+        $db->desconectar();
+        return $proveedor;
+    }
+
+    public function obtenerServicio($id) {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sqlSelect = "SELECT * FROM servicios WHERE id = '$id'";
+        $stmt = $conexion->query($sqlSelect);
+        $servicio = $stmt->fetch(PDO::FETCH_ASSOC);
+        $db->desconectar();
+        return $servicio;
+    }
+
+    public function guardarServicio($id_proveedor, $nombre_servicio, $descripcion, $precio) {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sqlInsert = "INSERT INTO servicios (id_proveedor, nombre_servicio, descripcion, precio) 
+                        VALUES ('$id_proveedor', '$nombre_servicio', '$descripcion', '$precio')";
+        $resultado = $conexion->exec($sqlInsert);
+        $db->desconectar();
+        return $resultado;
+    }
+
+    public function actualizarServicio($id_servicio, $id_proveedor, $nombre_servicio, $descripcion, $precio) {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sqlUpdate = "UPDATE servicios 
+                      SET id_proveedor = '$id_proveedor', 
+                          nombre_servicio = '$nombre_servicio', 
+                          descripcion = '$descripcion', 
+                          precio = '$precio' 
+                      WHERE id = '$id_servicio'";
+        $resultado = $conexion->exec($sqlUpdate);
+        $db->desconectar();
+        return $resultado;
+    }
+
+    public function eliminarServicio($id_servicio) {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sqlDelete = "DELETE FROM servicios WHERE id = '$id_servicio'";
+        $resultado = $conexion->exec($sqlDelete);
+        $db->desconectar();
+        return $resultado;
+    }
+
+    public function obtenerServiciosPorProveedor($id_proveedor) {
+        $db = new ConexionDB();
+        $conexion = $db->conectar();
+        $sqlSelect = "SELECT * FROM servicios WHERE id_proveedor = '$id_proveedor' ORDER BY nombre_servicio";
+        $stmt = $conexion->query($sqlSelect);
         $servicios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
         $db->desconectar();
         return $servicios;
-    }
-    
-    /**
-     * Guarda un nuevo servicio en el catálogo de un proveedor.
-     */
-    public static function guardar($datos) {
-        $db = new ConexionDB();
-        $conn = $db->conectar();
-
-        $id_proveedor = $datos['id_proveedor'];
-        $nombre_servicio = addslashes($datos['nombre_servicio']);
-        $precio = $datos['precio'];
-
-        $sql = "INSERT INTO servicios_proveedor (id_proveedor, nombre_servicio, precio) 
-                VALUES ('$id_proveedor', '$nombre_servicio', '$precio')";
-
-        $resultado = $conn->exec($sql);
-        
-        $db->desconectar();
-        return $resultado;
-    }
-
-    /**
-     * Actualiza un servicio existente.
-     */
-    public static function actualizar($id_servicio, $datos) {
-        $db = new ConexionDB();
-        $conn = $db->conectar();
-
-        $nombre_servicio = addslashes($datos['nombre_servicio']);
-        $precio = $datos['precio'];
-
-        $sql = "UPDATE servicios_proveedor SET 
-                    nombre_servicio = '$nombre_servicio', 
-                    precio = '$precio' 
-                WHERE id = '$id_servicio'";
-
-        $resultado = $conn->exec($sql);
-        
-        $db->desconectar();
-        return $resultado;
-    }
-
-    /**
-     * Elimina un servicio del catálogo.
-     */
-    public static function eliminar($id_servicio) {
-        $db = new ConexionDB();
-        $conn = $db->conectar();
-        
-        $sql = "DELETE FROM servicios_proveedor WHERE id = '$id_servicio'";
-        
-        $resultado = $conn->exec($sql);
-        
-        $db->desconectar();
-        return $resultado;
     }
 }
 ?>

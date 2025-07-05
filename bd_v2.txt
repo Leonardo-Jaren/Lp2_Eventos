@@ -1,0 +1,72 @@
+-- Base de datos LP2 Eventos - Versión sin ALTER
+DROP DATABASE IF EXISTS lp2_eventos02;
+CREATE DATABASE lp2_eventos02;
+USE lp2_eventos02;
+
+-- 1. Tabla de roles
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- 2. Tabla de usuarios
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    id_rol INT NOT NULL,
+    FOREIGN KEY (id_rol) REFERENCES roles(id)
+);
+
+-- 3. Tabla de proveedores
+CREATE TABLE proveedores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT UNIQUE NOT NULL,
+    nombre_empresa VARCHAR(100),
+    telefono VARCHAR(20),
+    direccion TEXT,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- 4. Tabla de servicios
+CREATE TABLE servicios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_proveedor INT NOT NULL,
+    nombre_servicio VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id) ON DELETE CASCADE
+);
+
+-- 5. Tabla de eventos
+CREATE TABLE eventos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    fecha_evento DATE NOT NULL,
+    hora_inicio TIME,
+    hora_fin TIME,
+    ubicacion VARCHAR(255),
+    presupuesto_estimado DECIMAL(10,2),
+    estado ENUM('borrador', 'planificacion', 'confirmado', 'en_proceso', 'finalizado', 'cancelado') DEFAULT 'borrador',
+    id_cliente INT NOT NULL,
+    id_organizador INT,
+    FOREIGN KEY (id_cliente) REFERENCES usuarios(id),
+    FOREIGN KEY (id_organizador) REFERENCES usuarios(id)
+);
+
+-- 6. Inserción de roles base
+INSERT INTO roles (nombre) VALUES
+('Cliente'),
+('Proveedor'),
+('Organizador'),
+('Administrador');
+
+-- 7. Índices para optimizar consultas
+CREATE INDEX idx_usuarios_correo ON usuarios(correo);
+CREATE INDEX idx_usuarios_rol ON usuarios(id_rol);
+CREATE INDEX idx_eventos_fecha ON eventos(fecha_evento);
+CREATE INDEX idx_eventos_cliente ON eventos(id_cliente);
+CREATE INDEX idx_servicios_proveedor ON servicios(id_proveedor);

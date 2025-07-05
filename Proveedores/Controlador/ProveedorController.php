@@ -1,7 +1,7 @@
 <?php
-// Incluir los modelos necesarios una sola vez al principio.
-require_once __DIR__ . '/../Modelos/Proveedor.php';
-require_once __DIR__ . '/../Modelos/CatalogoServicios.php';
+
+require_once '../Modelos/Proveedor.php';
+require_once '../Modelos/CatalogoServicios.php';
 
 /**
  * Controlador para gestionar todas las operaciones del Módulo de Proveedores.
@@ -37,10 +37,21 @@ class ProveedorController {
     public function guardar(array $datos) {
         // ACTUALIZADO: Se crea una instancia y se llama a guardarProveedor con parámetros individuales.
         $proveedor = new Proveedor();
+        
+        $id_usuario = null;
+        if (isset($datos['id_usuario']) && !empty(trim($datos['id_usuario']))) {
+            $id_usuario = (int)$datos['id_usuario'];
+        }
+        
+        if ($id_usuario && $proveedor->existeProveedorParaUsuario($id_usuario)) {
+            return 'Ya existe un proveedor registrado para este usuario. Un usuario solo puede tener un proveedor asociado.';
+        }
+        
         $resultado = $proveedor->guardarProveedor(
-            $datos['nombre'],
-            $datos['correo'],
-            $datos['empresa']
+            $datos['nombre_empresa'],
+            $datos['telefono'],
+            $datos['direccion'],
+            $id_usuario
         );
         
         // Se maneja la respuesta del modelo.
@@ -61,11 +72,18 @@ class ProveedorController {
     public function actualizar(int $id_proveedor, array $datos) {
         // ACTUALIZADO: Se crea una instancia y se llama a actualizarProveedor.
         $proveedor = new Proveedor();
+        
+        $id_usuario = null;
+        if (isset($datos['id_usuario']) && !empty(trim($datos['id_usuario']))) {
+            $id_usuario = (int)$datos['id_usuario'];
+        }
+        
         $resultado = $proveedor->actualizarProveedor(
-            $id_proveedor,
-            $datos['nombre'],
-            $datos['correo'],
-            $datos['empresa']
+            $datos['id'],
+            $datos['nombre_empresa'],
+            $datos['telefono'],
+            $datos['direccion'],
+            $id_usuario
         );
         
         if ($resultado['success']) {
@@ -76,29 +94,16 @@ class ProveedorController {
         exit();
     }
 
-    /**
-     * Elimina un proveedor.
-     * @param int $id_proveedor El ID del proveedor a eliminar.
-     */
-    public function eliminar(int $id_proveedor) {
-        // ACTUALIZADO: Se llama al método estático eliminarProveedor y se quita el id_usuario.
-        if ($id_proveedor > 0) {
-            Proveedor::eliminarProveedor($id_proveedor);
+    public function eliminarProveedor($id) {
+        $proveedor = new Proveedor();
+        $resultado = $proveedor->eliminarProveedor($id);
+        $id = $_GET['id'] ?? null;
+        if ($resultado) {
+            header('Location: verProveedor.php');
+            exit();
+        } else {
+            return "Error al eliminar el proveedor.";
         }
-        
-        // Redirige a la lista después de eliminar.
-        header('Location: ../views/proveedores/verProveedores.php?status=eliminado');
-        exit();
-    }
-
-    /**
-     * Obtiene los servicios del catálogo de un proveedor específico.
-     * @param int $id_proveedor El ID del proveedor.
-     * @return array Un array con los servicios del proveedor.
-     */
-    public function verCatalogo(int $id_proveedor) {
-        // Se mantiene la lógica, pero se podría ajustar al modelo de Catalogo si fuera necesario.
-        return CatalogoServicios::obtenerPorProveedor($id_proveedor);
     }
 }
 ?>
