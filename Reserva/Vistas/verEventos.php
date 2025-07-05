@@ -61,6 +61,12 @@ $rol = $usuario['rol'] ?? 'Cliente';
             </div>
         </div>
 
+        <div class="px-6">
+            <a href="/Lp2_Eventos/dashboard.php" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">
+                <i class="fas fa-arrow-left mr-2"></i>Atras
+            </a>
+        </div>
+
         <!-- Mensajes -->
         <?php if (!empty($mensaje)): ?>
             <div class="mb-6 p-4 rounded-md <?php echo $tipo_mensaje === 'error' ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-green-100 text-green-700 border border-green-300'; ?>">

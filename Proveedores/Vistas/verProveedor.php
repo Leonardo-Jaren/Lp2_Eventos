@@ -162,7 +162,7 @@ unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
                                         </a>
                                     </div>
                                     <?php endif; ?>
-                                    <a href="../Vistas/verCatalogo.php?id_proveedor=<?php echo $proveedor['id']; ?>" 
+                                    <a href="verCatalogo.php?id_proveedor=<?php echo $proveedor['id']; ?>" 
                                        class="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors duration-200">
                                         <i class="fas fa-list mr-1"></i>Servicios
                                     </a>
