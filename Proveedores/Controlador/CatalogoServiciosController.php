@@ -15,7 +15,7 @@ class CatalogoServiciosController {
         
         if ($resultado) {
             $id_proveedor = $datos['id_proveedor'];
-            header("Location: verCatalogo.php?id=" . $id_proveedor);
+            header("Location: verProveedor.php?id=" . $id_proveedor);
             exit();
         } else {
             return "Error al registrar el servicio.";
