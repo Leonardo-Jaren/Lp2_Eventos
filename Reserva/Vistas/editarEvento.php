@@ -40,7 +40,7 @@ unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
 if (!isset($evento) || !$evento) {
     $id_evento = $_GET['id'] ?? '';
     if ($id_evento) {
-        require_once '../Modelos/Reserva.php';
+        require_once '../Modelos/Evento.php';
         
         try {
             $reservaModel = new Evento();
