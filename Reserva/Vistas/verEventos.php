@@ -58,6 +58,10 @@ $rol = $usuario['rol'] ?? 'Cliente';
         <div class="mb-8">
             <div class="flex justify-between items-center">
                 <h1 class="text-3xl font-bold text-gray-900">Gestión de Eventos</h1>
+                <a href="crearEvento.php" 
+                   class="inline-flex items-center px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow">
+                    <i class="fas fa-plus mr-2"></i> Crear Evento
+                </a>
             </div>
         </div>
 
