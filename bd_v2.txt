@@ -1,4 +1,5 @@
--- Base de datos LP2 Eventos - Versión refactorizada sin bucles
+-- Base de datos LP2 Eventos - Versión sin ALTER
+DROP DATABASE IF EXISTS lp2_eventos02;
 CREATE DATABASE lp2_eventos02;
 USE lp2_eventos02;
 
@@ -8,7 +9,7 @@ CREATE TABLE roles (
     nombre VARCHAR(50) UNIQUE NOT NULL
 );
 
--- 2. Tabla de usuarios (tabla principal sin dependencias)
+-- 2. Tabla de usuarios
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombres VARCHAR(100) NOT NULL,
@@ -19,7 +20,7 @@ CREATE TABLE usuarios (
     FOREIGN KEY (id_rol) REFERENCES roles(id)
 );
 
--- 3. Tabla de proveedores (eliminando referencia circular)
+-- 3. Tabla de proveedores
 CREATE TABLE proveedores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT UNIQUE NOT NULL,
@@ -29,7 +30,7 @@ CREATE TABLE proveedores (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
--- 4. Tabla de servicios (separada de proveedores para mejor normalización)
+-- 4. Tabla de servicios
 CREATE TABLE servicios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_proveedor INT NOT NULL,
@@ -56,26 +57,16 @@ CREATE TABLE eventos (
     FOREIGN KEY (id_organizador) REFERENCES usuarios(id)
 );
 
--- 1. Eliminar la columna actual y su clave foránea
-ALTER TABLE solicitudes_servicio
-DROP FOREIGN KEY solicitudes_servicio_ibfk_2,  -- nombre de la FK puede variar
-DROP COLUMN id_servicio;
-
--- 2. Agregar la nueva columna con la FK al proveedor
-ALTER TABLE solicitudes_servicio
-ADD COLUMN id_proveedor INT NOT NULL,
-ADD FOREIGN KEY (id_proveedor) REFERENCES proveedores(id) ON DELETE CASCADE;
--- 10. Inserción de roles base
+-- 6. Inserción de roles base
 INSERT INTO roles (nombre) VALUES
 ('Cliente'),
 ('Proveedor'),
 ('Organizador'),
 ('Administrador');
 
--- 11. Índices para optimizar consultas
+-- 7. Índices para optimizar consultas
 CREATE INDEX idx_usuarios_correo ON usuarios(correo);
 CREATE INDEX idx_usuarios_rol ON usuarios(id_rol);
 CREATE INDEX idx_eventos_fecha ON eventos(fecha_evento);
 CREATE INDEX idx_eventos_cliente ON eventos(id_cliente);
 CREATE INDEX idx_servicios_proveedor ON servicios(id_proveedor);
-CREATE INDEX idx_contratos_solicitud ON contratos(id_solicitud);
