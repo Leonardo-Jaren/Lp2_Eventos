@@ -15,9 +15,24 @@ $proveedorModel = new Proveedor();
 $proveedores = $proveedorModel->obtenerTodosLosProveedores();
 $rol = $usuario['rol'] ?? 'Cliente';
 
+// Verificar si el usuario actual ya tiene un proveedor registrado
+$usuarioTieneProveedor = $proveedorModel->existeProveedorParaUsuario($_SESSION['id']);
+
+// Procesar mensajes de sesión
+$mensaje = $_SESSION['mensaje'] ?? '';
+$tipo_mensaje = $_SESSION['tipo_mensaje'] ?? '';
+unset($_SESSION['mensaje'], $_SESSION['tipo_mensaje']);
+
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Mensajes -->
+    <?php if (!empty($mensaje)): ?>
+        <div class="mb-6 p-4 rounded-md <?php echo $tipo_mensaje === 'error' ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-green-100 text-green-700 border border-green-300'; ?>">
+            <?php echo htmlspecialchars($mensaje); ?>
+        </div>
+    <?php endif; ?>
+
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="bg-purple-700 text-white px-6 py-4">
             <div class="flex justify-between items-center">
@@ -25,7 +40,7 @@ $rol = $usuario['rol'] ?? 'Cliente';
                     <i class="fas fa-truck-loading mr-3"></i>
                     Gestión de Proveedores
                 </h1>
-                <?php if ($rol === 'Administrador'): ?>
+                <?php if ($rol === 'Administrador' || ($rol === 'Proveedor' && !$usuarioTieneProveedor)): ?>
                     <a href="crearProveedor.php" class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-100 font-medium transition-transform transform hover:scale-105">
                         <i class="fas fa-plus mr-2"></i>
                         Nuevo proveedor
@@ -52,21 +67,21 @@ $rol = $usuario['rol'] ?? 'Cliente';
                         </div>
                     </div>
                 </div>
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                <div class="bg-gradient-to-r from-green-500 to-teal-600 rounded-lg p-4 text-white">
                     <div class="flex items-center">
-                        <i class="fas fa-check-circle text-2xl mr-3"></i>
+                        <i class="fas fa-handshake text-2xl mr-3"></i>
                         <div>
-                            <p class="text-green-100 text-sm">Activos</p>
+                            <p class="text-blue-100 text-sm">Proveedores Activos</p>
                             <p class="text-2xl font-bold"><?php echo count($proveedores); ?></p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-4 text-white">
                     <div class="flex items-center">
                         <i class="fas fa-star text-2xl mr-3"></i>
                         <div>
-                            <p class="text-purple-100 text-sm">Destacados</p>
-                            <p class="text-2xl font-bold">0</p>
+                            <p class="text-blue-100 text-sm">Mejor Valorados</p>
+                            <p class="text-2xl font-bold"><?php echo min(count($proveedores), 5); ?></p>
                         </div>
                     </div>
                 </div>
@@ -80,10 +95,15 @@ $rol = $usuario['rol'] ?? 'Cliente';
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay proveedores registrados</h3>
                     <p class="text-gray-500 mb-6 max-w-sm mx-auto">Comienza agregando tu primer proveedor para gestionar los servicios de eventos.</p>
-                    <?php if ($rol === 'Administrador'): ?>
+                    <?php if ($rol === 'Administrador' || ($rol === 'Proveedor' && !$usuarioTieneProveedor)): ?>
                         <a href="crearProveedor.php" class="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                             <i class="fas fa-plus mr-2"></i>Crear Primer Proveedor
                         </a>
+                    <?php elseif ($rol === 'Proveedor' && $usuarioTieneProveedor): ?>
+                        <p class="text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded-lg p-3 max-w-md mx-auto">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Ya tienes un proveedor registrado. Un usuario solo puede tener un proveedor asociado.
+                        </p>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
@@ -94,95 +114,79 @@ $rol = $usuario['rol'] ?? 'Cliente';
                             <!-- Header de la card -->
                             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
                                 <div class="flex items-center justify-between">
-                                    <div class="bg-white bg-opacity-20 rounded-full p-3">
-                                        <i class="fas fa-building text-white text-xl"></i>
-                                    </div>
-                                    <div class="flex space-x-1">
-                                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                                        <div class="w-2 h-2 bg-green-400 rounded-full opacity-60"></div>
-                                        <div class="w-2 h-2 bg-green-400 rounded-full opacity-30"></div>
-                                    </div>
+                                    <h3 class="text-lg font-semibold text-white truncate">
+                                        <i class="fas fa-building mr-2"></i>
+                                        <?php echo htmlspecialchars($proveedor['nombre_empresa']); ?>
+                                    </h3>
+                                    <span class="bg-white bg-opacity-20 text-white text-xs px-2 py-1 rounded-full">
+                                        ID: <?php echo $proveedor['id']; ?>
+                                    </span>
                                 </div>
-                                <h3 class="text-white text-lg font-bold mt-3 truncate"><?php echo htmlspecialchars($proveedor['nombre_empresa']); ?></h3>
-                                <p class="text-blue-100 text-sm"><?php echo htmlspecialchars($proveedor['telefono']); ?></p>
                             </div>
 
                             <!-- Contenido de la card -->
-                            <div class="p-4 space-y-3">
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-map-marker-alt text-red-500 w-5 text-sm mr-3"></i>
-                                    <span class="text-sm truncate"><?php echo htmlspecialchars($proveedor['direccion']); ?></span>
-                                </div>
-
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-user text-blue-500 w-5 text-sm mr-3"></i>
-                                    <span class="text-sm">
-                                        <?php if (!empty($proveedor['nombre_usuario'])): ?>
-                                            <?php echo htmlspecialchars($proveedor['nombre_usuario']); ?>
-                                        <?php else: ?>
-                                            <span class="text-gray-400 italic">Sin usuario asignado</span>
-                                        <?php endif; ?>
-                                    </span>
-                                </div>
-
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-calendar-check text-green-500 w-5 text-sm mr-3"></i>
-                                    <span class="text-sm">Servicios disponibles</span>
-                                </div>
-
-                                <!-- Badge de estado -->
-                                <div class="flex items-center justify-between">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <div class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5"></div>
-                                        Activo
-                                    </span>
-                                    <span class="text-xs text-gray-500">ID: <?php echo $proveedor['id']; ?></span>
+                            <div class="p-4">
+                                <div class="space-y-3">
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-phone text-blue-500 w-5"></i>
+                                        <span class="ml-2 text-sm"><?php echo htmlspecialchars($proveedor['telefono']); ?></span>
+                                    </div>
+                                    <div class="flex items-start text-gray-600">
+                                        <i class="fas fa-map-marker-alt text-red-500 w-5 mt-0.5"></i>
+                                        <span class="ml-2 text-sm"><?php echo htmlspecialchars($proveedor['direccion']); ?></span>
+                                    </div>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-user text-green-500 w-5"></i>
+                                        <span class="ml-2 text-sm">
+                                            <?php echo $proveedor['nombre_usuario'] ? htmlspecialchars($proveedor['nombre_usuario']) : 'Sin asignar'; ?>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Footer con acciones -->
-                            <div class="bg-gray-50 p-4 border-t border-gray-100">
+                            <!-- Footer de la card -->
+                            <div class="bg-gray-50 px-4 py-3 border-t border-gray-100">
                                 <div class="flex justify-between items-center">
+                                    <?php if ($rol === 'Administrador' || ($rol === 'Proveedor' && !$usuarioTieneProveedor)): ?>
                                     <div class="flex space-x-2">
-                                        <a href="verCatalogo.php?id=<?php echo $proveedor['id']; ?>"
-                                            class="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
-                                            title="Ver Catálogo">
-                                            <i class="fas fa-book-open text-xs"></i>
+                                        <a href="editarProveedor.php?id=<?php echo $proveedor['id']; ?>" 
+                                           class="text-blue-600 hover:text-blue-800 transition-colors duration-200" 
+                                           title="Editar proveedor">
+                                            <i class="fas fa-edit"></i>
                                         </a>
-                                        <?php if ($rol === 'Cliente'): ?>
-                                        <a href="../../Reserva/Vistas/crearEvento.php?id_proveedor=<?php echo $proveedor['id']; ?>"
-                                            class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
-                                            title="Crear Evento">
-                                            <i class="fas fa-calendar-plus text-xs"></i>
+                                        <a href="eliminarProveedor.php?id=<?php echo $proveedor['id']; ?>" 
+                                           class="text-red-600 hover:text-red-800 transition-colors duration-200" 
+                                           title="Eliminar proveedor"
+                                           onclick="return confirm('¿Estás seguro de que quieres eliminar este proveedor?')">
+                                            <i class="fas fa-trash"></i>
                                         </a>
-                                        <?php endif; ?>
-                                        <?php if ($rol === 'Administrador'): ?>
-                                            <a href="editarProveedor.php?id=<?php echo $proveedor['id']; ?>"
-                                                class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
-                                                title="Editar">
-                                                <i class="fas fa-edit text-xs"></i>
-                                            </a>
-
-                                            <a href="eliminarProveedor.php?id=<?php echo $proveedor['id']; ?>"
-                                                class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition duration-200 shadow-sm hover:shadow-md"
-                                                title="Eliminar"
-                                                onclick="return confirm('¿Estás seguro de que deseas eliminar este proveedor?')">
-                                                <i class="fas fa-trash text-xs"></i>
-                                            </a>
-                                        <?php endif; ?>
                                     </div>
+                                    <?php endif; ?>
+                                    <a href="../Vistas/verCatalogo.php?id_proveedor=<?php echo $proveedor['id']; ?>" 
+                                       class="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors duration-200">
+                                        <i class="fas fa-list mr-1"></i>Servicios
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
 
-                <!-- Paginación futura -->
-                <div class="mt-8 flex justify-center">
-                    <div class="flex items-center space-x-2 text-sm text-gray-500">
-                        <span>Mostrando <?php echo count($proveedores); ?> de <?php echo count($proveedores); ?> proveedores</span>
+                <!-- Información adicional para usuarios con proveedor -->
+                <?php if ($rol === 'Proveedor' && $usuarioTieneProveedor): ?>
+                    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 mr-3"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-blue-900">Información</h4>
+                                <p class="text-sm text-blue-700 mt-1">
+                                    Ya tienes un proveedor registrado. Un usuario solo puede tener un proveedor asociado.
+                                    Puedes editar la información de tu proveedor existente.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>

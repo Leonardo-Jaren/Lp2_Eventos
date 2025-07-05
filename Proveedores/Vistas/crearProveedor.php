@@ -15,6 +15,14 @@ $usuarioModel = new Usuario();
 $usuarioActual = $usuarioModel->obtenerUsuarioConRol($_SESSION['id']);
 $esAdministrador = ($usuarioActual['rol'] === 'Administrador');
 
+$proveedor = new Proveedor();
+if (!$esAdministrador && $proveedor->existeProveedorParaUsuario($_SESSION['id'])) {
+    $_SESSION['mensaje'] = 'Ya tienes un proveedor registrado. No puedes crear más de uno.';
+    $_SESSION['tipo_mensaje'] = 'error';
+    header("Location: verProveedor.php");
+    exit();
+}
+
 // Si es administrador, obtener lista de usuarios
 $usuarios = [];
 if ($esAdministrador) {

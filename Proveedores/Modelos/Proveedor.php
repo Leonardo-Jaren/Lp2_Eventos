@@ -1,6 +1,6 @@
 <?php
 
-require_once '../../conexion_db.php';
+require_once __DIR__ . '/../../conexion_db.php';
 
 class Proveedor {
     public static function obtenerTodosLosProveedores()
@@ -156,5 +156,16 @@ class Proveedor {
         $proveedor = $stmt->fetch(PDO::FETCH_ASSOC);
         $conn->desconectar();
         return $proveedor['nombre_empresa'] ?? '';
+    }
+
+    public function existeProveedorParaUsuario($id_usuario)
+    {
+        $conn = new ConexionDB();
+        $conexion = $conn->conectar();
+        $sqlSelect = "SELECT COUNT(*) as total FROM proveedores WHERE id_usuario = '$id_usuario'";
+        $stmt = $conexion->query($sqlSelect);
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        $conn->desconectar();
+        return $resultado['total'] > 0;
     }
 }

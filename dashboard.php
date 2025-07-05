@@ -111,6 +111,26 @@ require_once 'nav.php';
                     <a href="Proveedores/Vistas/verProveedor.php" class="text-purple-600 hover:text-purple-800">Ver todos →</a>
                 </div>
             </div>
+
+            <!-- Perfil Proveedor -->
+            <?php if ($rol === 'Proveedor'): ?>
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-full">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Mi Perfil</h3>
+                        <p class="text-gray-600">Ver y editar tu perfil de proveedor</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="Proveedores/Vistas/Perfil/verPerfilProveedor.php" class="text-yellow-600 hover:text-yellow-800">Ir al perfil →</a>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Estadísticas Rápidas -->
