@@ -1,5 +1,4 @@
 <?php
-// Redirige a la nueva ruta sin tilde en el nombre de la carpeta
 session_start();
 session_unset();
 $_SESSION = array();

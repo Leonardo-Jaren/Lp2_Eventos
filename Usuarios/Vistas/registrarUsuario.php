@@ -96,7 +96,7 @@ if (!empty($_POST)) {
         </form>
         
         <div class="mt-4 text-center">
-            <a href="../../Autenticación/Vista/login.php"
+            <a href="../../Autenticacion/Vista/login.php"
                 class="text-blue-600 hover:text-blue-800 text-sm">
                 ¿Ya tienes cuenta? Inicia sesión
             </a>

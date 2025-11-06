@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['id'])) {
-    header("Location: Autenticación/Vista/login.php");
+    header("Location: Autenticacion/Vista/login.php");
     exit();
 }
 
@@ -21,7 +21,7 @@ $rol = $usuario['rol'] ?? 'Cliente';
 
 if (!$usuario) {
     session_destroy();
-    header("Location: Autenticación/Vista/login.php");
+    header("Location: Autenticacion/Vista/login.php");
     exit();
 }
 

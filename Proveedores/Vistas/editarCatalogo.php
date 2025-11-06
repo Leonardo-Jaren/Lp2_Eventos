@@ -6,7 +6,7 @@ require_once '../Modelos/CatalogoServicios.php';
 require_once '../Modelos/Proveedor.php';
 
 if (!isset($_SESSION['id'])) {
-    header("Location: /Lp2_Eventos/Autenticación/Vista/login.php");
+    header("Location: /Lp2_Eventos/Autenticacion/Vista/login.php");
     exit();
 }
 

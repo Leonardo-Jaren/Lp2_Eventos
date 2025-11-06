@@ -3,7 +3,7 @@ session_start();
 
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['id'])) {
-    header("Location: ../../../Autenticación/Vista/login.php");
+    header("Location: ../../../Autenticacion/Vista/login.php");
     exit();
 }
 

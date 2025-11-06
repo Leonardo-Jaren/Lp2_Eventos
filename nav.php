@@ -94,7 +94,7 @@ $titulo_pagina = $titulo_pagina ?? 'Plannea - Sistema para Gestión de Eventos';
                                 class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md transition duration-200 flex items-center">
                                 <i class="fas fa-user mr-1"></i> Mi Perfil
                             </a>
-                            <a href="/Lp2_Eventos/Autenticación/Vista/logout.php"
+                            <a href="/Lp2_Eventos/Autenticacion/Vista/logout.php"
                                 class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md transition duration-200 flex items-center">
                                 <i class="fas fa-sign-out-alt mr-1"></i> Salir
                             </a>
